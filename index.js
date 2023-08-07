@@ -27,23 +27,23 @@ let oldMessages = [];
 
 async function processNewMessages() {
 	const newMessages = messages.filter(
-		(msg) => !oldMessages.some((oldMsg) => oldMsg.msg === msg.msg)
+		(msg) => !oldMessages.some((oldMsg) => oldMsg.text === msg.text)
 	);
 
 	for (const chatMessageObj of newMessages) {
-		const chatMessage = chatMessageObj.msg;
+		const chatMessage = chatMessageObj.text;
 
 		if (includesPrefix(chatMessage)) {
 			console.log(
 				'[NEW MSG] From:',
-				chatMessageObj.user,
+				chatMessageObj.author,
 				'with content:',
 				chatMessage
 			);
 			const question = chatMessage.replace(PREFIX, '').trim();
 
 			if (question.includes("/suspend")) {
-				if (isUserStaff(chatMessageObj.user)) {
+				if (isUserStaff(chatMessageObj.author)) {
 					// Then check if is staff
 					console.log('[KILLCMD] Killing process...');
 					await postMessage('[KILLCMD] Killing process...')
@@ -56,14 +56,17 @@ async function processNewMessages() {
 
 			if (question && !questionQueue.includes(question)) {
 				console.log('[ADD QUEUE] Adding question to queue:', question);
-				addToQueue(question);
+				addToQueue({ 
+					author: chatMessageObj.author,
+					text: question
+				});
 			}
 		}
 	}
 }
 
 async function answerQuestion(question) {
-	console.log(`[PROCESS] Answering: ${question}`);
+	console.log(`[PROCESS] Answering: ${question.text}`);
 	const contextMemory = messages.slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
 
@@ -74,11 +77,11 @@ async function answerQuestion(question) {
 		},
 		...contextMemory.map((msg) => ({
 			role: 'user',
-			content: msg.msg,
+			content: `${msg.author}: ${msg.text}`,
 		})),
 		{
 			role: 'user',
-			content: question,
+			content: `${question.author}: ${question.text}`,
 		},
 	];
 

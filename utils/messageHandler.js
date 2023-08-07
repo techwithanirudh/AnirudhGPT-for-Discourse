@@ -58,7 +58,7 @@ async function getMessages() {
 		const data = await response.json();
 		let messages = [];
 		data.messages.forEach((message) => {
-			messages.push({ msg: message.message, user: message.user.username });
+			messages.push({ text: message.message, author: message.user.username });
 		});
 
 		return messages;
