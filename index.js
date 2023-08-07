@@ -42,7 +42,7 @@ async function processNewMessages() {
       );
       const question = chatMessage.replace(PREFIX, '').trim();
 
-			if (question.startsWith("/suspend")) {
+			if (question.includes("/suspend")) {
 				if (isUserStaff(chatMessageObj.user)) {
 	 				// Then check if is staff
 	        console.log('[KILLCMD] Killing process...');
