@@ -14,7 +14,7 @@ import {
 	getNextQuestion,
 	questionQueue
 } from './utils';
-import { OPENAI_API_KEY, OPENAI_BASE_URL, SYSTEM_PROMPT, PREFIX, CONTEXT_LENGTH, MODEL } from './config';
+import { OPENAI_API_KEY, OPENAI_BASE_URL, SYSTEM_PROMPT, PREFIX, CONTEXT_LENGTH, MODEL, REFRESH_TIME } from './config';
 
 const configuration = new Configuration({
 	apiKey: OPENAI_API_KEY,
@@ -120,7 +120,7 @@ async function main() {
 	oldMessages = loadOldMessagesFromFile();
 
 	mainLoop();
-	setInterval(mainLoop, 5000);
+	setInterval(mainLoop, REFRESH_TIME * 1000);
 }
 
 main();

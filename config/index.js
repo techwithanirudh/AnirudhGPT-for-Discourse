@@ -15,5 +15,6 @@ const PREFIX = "@anirudhgpt"
 const STAFF_LIST = ['techwithanirudh', 'python660', 'OmegaOrbitals', 'SnakeByte']
 const CONTEXT_LENGTH = 35; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo';
+const REFRESH_TIME = 15; // in seconds
 
-export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL }
+export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL, REFRESH_TIME }
