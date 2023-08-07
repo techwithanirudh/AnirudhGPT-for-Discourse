@@ -44,7 +44,7 @@ async function postMessage(msg) {
 }
 
 async function getMessages() {
-	const url = `${BASE_URL}/chat/api/channels/${CHANNEL_ID}/messages?fetch_from_last_read=true&page_size=50`;
+	const url = `${BASE_URL}/chat/api/channels/${CHANNEL_ID}/messages?fetch_from_last_read=false&page_size=10`;
 	const headers = {
 		...getHeaders("GET"),
 	};
