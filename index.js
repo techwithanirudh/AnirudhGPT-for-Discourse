@@ -54,7 +54,7 @@ async function processNewMessages() {
 				}
 			}
 
-			if (question && !questionQueue.includes(question)) {
+			else if (question && !questionQueue.includes(question)) {
 				console.log('[ADD QUEUE] Adding question to queue:', question);
 				addToQueue({ 
 					author: chatMessageObj.author,
@@ -69,7 +69,7 @@ async function answerQuestion(question) {
 	console.log(`[PROCESS] Answering: ${question.text}`);
 	const contextMemory = messages.slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
-
+  // console.log(`[PROCESS LOG] Context memory:`, contextMemory);
 	const openAIMessages = [
 		{
 			role: 'system',
@@ -91,7 +91,7 @@ async function answerQuestion(question) {
 	});
 
 	const completionText = completion.data.choices[0].message.content;
-	await postMessage(completionText);
+	await postMessage(`@${question.author} ${completionText}`);
 	console.log(`[ANSWERED] ${completionText}`);
 }
 
