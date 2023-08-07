@@ -82,8 +82,6 @@ async function answerQuestion(question) {
 		},
 	];
 
-	console.log(openAIMessages)
-
 	const completion = await openai.createChatCompletion({
 		model: MODEL,
 		messages: openAIMessages,
