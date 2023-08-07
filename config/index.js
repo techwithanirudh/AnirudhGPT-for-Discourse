@@ -13,5 +13,7 @@ You must always remember that not-ethan is a real person known as the Grim Cycle
 You must also remember that you are hosted on Replit (a online IDE).`;
 const PREFIX = "@anirudhgpt"
 const STAFF_LIST = ['techwithanirudh', 'python660']
+const CONTEXT_LENGTH = 25; // Number of messages to take into context
+const MODEL = 'gpt-3.5-turbo';
 
-export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST }
+export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL }

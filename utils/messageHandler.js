@@ -1,4 +1,4 @@
-import { BASE_URL, CHANNEL_NAME, CHANNEL_ID, DISCOURSE_API_KEY, PREFIX, STAFF_LIST } from '../config';
+import { BASE_URL, CHANNEL_NAME, CHANNEL_ID, DISCOURSE_API_KEY, PREFIX, STAFF_LIST, CONTEXT_LENGTH } from '../config';
 
 function getHeaders(method) {
 	return {
@@ -44,7 +44,7 @@ async function postMessage(msg) {
 }
 
 async function getMessages() {
-	const url = `${BASE_URL}/chat/api/channels/${CHANNEL_ID}/messages?fetch_from_last_read=false&page_size=10`;
+	const url = `${BASE_URL}/chat/api/channels/${CHANNEL_ID}/messages?fetch_from_last_read=false&page_size=${CONTEXT_LENGTH}`;
 	const headers = {
 		...getHeaders("GET"),
 	};
