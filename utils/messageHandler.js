@@ -69,7 +69,7 @@ async function getMessages() {
 
 
 function includesPrefix(message) {
-	return message.startsWith(PREFIX)
+	return message.includes(PREFIX)
 }
 
 // Function to check if a user is staff using the Discourse API and with exceptions array
