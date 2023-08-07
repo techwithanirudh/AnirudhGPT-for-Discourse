@@ -90,7 +90,6 @@ async function answerQuestion(question) {
 async function mainLoop() {
   try {
     messages = await getMessages();
-
     if (JSON.stringify(messages) !== JSON.stringify(oldMessages)) {
       processNewMessages();
 
@@ -101,9 +100,6 @@ async function mainLoop() {
     if (questionQueue.length > 0) {
       const nextQuestion = getNextQuestion();
       await answerQuestion(nextQuestion);
-
-      saveOldMessagesToFile(messages);
-      oldMessages = messages;
     }
   } catch (error) {
     console.error('Error:', error);
