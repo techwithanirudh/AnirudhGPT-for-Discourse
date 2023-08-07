@@ -25,7 +25,7 @@ function getHeaders(method) {
 
 async function postMessage(msg) {
 	const url = `${BASE_URL}/chat/${CHANNEL_ID}`;
-	const body = `message=${msg}&staged_id=39278572-0717-4499-a578-c0dad1d999f9`;
+	const body = `message=${encodeURIComponent(msg)}&staged_id=39278572-0717-4499-a578-c0dad1d999f9`;
 	const headers = {
 		...getHeaders("POST")
 	};
