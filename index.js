@@ -91,7 +91,7 @@ async function answerQuestion(question) {
 	});
 
 	const completionText = completion.data.choices[0].message.content;
-	await postMessage(`@${question.author} ${completionText}`);
+	await postMessage(completionText);
 	console.log(`[ANSWERED] ${completionText}`);
 }
 
