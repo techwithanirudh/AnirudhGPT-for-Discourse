@@ -22,12 +22,23 @@ const STAFF_LIST = ['techwithanirudh', 'python660', 'OmegaOrbitals', 'SnakeByte'
 const CONTEXT_LENGTH = 50; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo-16k';
 const EVENT_CONF = {
-  SRV_START: "blue",
-  WEBHOOK_ERR: "red",
-  KILLCMD_ERR: "red",
-  PARSE_ERR: "RED",
-  WEBHOOK: "blue"
+	SRV_START: "blue",
+	WEBHOOK_ERR: "red",
+	KILLCMD_ERR: "red",
+	PARSE_ERR: "red",
+	WEBHOOK: "blue",
+	ANSWERED: "green",
+	ANSWERING: "blue",
+	NEWMSG: "purple",
+	KILLCMD: "orange",
+	ADD_QUEUE: "yellow",
+	FETCH_ERR: "red",
+	CHECK_ADMIN: "blue",
+	CHECK_ADMIN_ERR: "red",
+	MSG_SAVE_ERR: "red",
+	MSG_LOAD_ERR: "red"
 };
+
 // NEWMSG
 // KILLCMD
 // KILLCMD_ERR

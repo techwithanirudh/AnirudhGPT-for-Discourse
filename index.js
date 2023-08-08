@@ -51,11 +51,11 @@ async function processNewMessages() {
 				if (isUserStaff(chatMessageObj.author)) {
 					// Then check if is staff
 					console.event('KILLCMD', 'Killing process...');
-					await postMessage('[KILLCMD] Killing process...')
+					await postMessage('[SUSPEND] Killing process...')
 					process.exit();
 				} else {
-					console.event('KILLCMD_ERR', 'Failed due to message is not from admin / moderator...')
-					await postMessage('[KILLCMD] Failed due to message is not from admin / moderator...')
+					console.event('KILLCMD_ERR', 'Failed because message is not from an admin / moderator...')
+					await postMessage('[ERROR] Failed because message is not from an admin / moderator...')
 				}
 			}
 
@@ -74,6 +74,7 @@ async function answerQuestion(question) {
 	// flashy at times.
 	// committed yet?
 	const spinner = ora(`[PROCESS] Answering: ${question.text}`).start();
+  console.log("")
 
 	const contextMemory = messages.slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
@@ -137,9 +138,10 @@ app.get('/', (req, res) => {
 // Webhook route for receiving new messages
 app.post('/webhook', async (req, res) => {
 	try {
-        // console.event("NOTIF_FULL", JSON.stringify(req))
-		// console.event("NOTIF_BODY", JSON.stringify(req.body))
-// gimme a min as i commit
+		//console.log(req)
+		// console.event("NOTIF_FULL", JSON.stringify(req))
+		console.event("NOTIF_BODY", JSON.stringify(req.body))
+
 		oldMessages = loadOldMessagesFromFile();
 		checkForMessages();
 
@@ -154,5 +156,8 @@ app.post('/webhook', async (req, res) => {
 // Start the Express server
 app.listen(port, () => {
 	console.event('SRV_START', `Server is listening on port ${port}`);
+  oldMessages = loadOldMessagesFromFile();
+	checkForMessages();
+  // Init check
 });
 //all done!
