@@ -1,3 +1,4 @@
+import express from 'express';
 import { Configuration, OpenAIApi } from 'openai';
 import {
 	postMessage,
@@ -15,6 +16,11 @@ import {
 	questionQueue
 } from './utils';
 import { OPENAI_API_KEY, OPENAI_BASE_URL, SYSTEM_PROMPT, PREFIX, CONTEXT_LENGTH, MODEL, REFRESH_TIME } from './config';
+
+const app = express();
+const port = 3000; // Change to the desired port number
+
+app.use(express.json());
 
 const configuration = new Configuration({
 	apiKey: OPENAI_API_KEY,
@@ -127,4 +133,28 @@ async function main() {
 	setInterval(mainLoop, REFRESH_TIME * 1000);
 }
 
+// Main route
+app.get('/', (req, res) => {
+	res.status(200).send('Pong');
+});
+
+// Webhook route for receiving new messages
+app.get('/webhook', async (req, res) => {
+	try {
+		oldMessages = loadOldMessagesFromFile();
+		mainLoop();
+		
+		res.status(200).send('Message received and processed.');
+	} catch (error) {
+		console.error('Error:', error);
+		res.status(500).send('Error processing message.');
+	}
+});
+
+// Start the bot
 main();
+
+// Start the Express server
+app.listen(port, () => {
+	console.log(`Express server is listening on port ${port}`);
+});
