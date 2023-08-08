@@ -21,6 +21,27 @@ const PREFIX = "@anirudhgpt"
 const STAFF_LIST = ['techwithanirudh', 'python660', 'OmegaOrbitals', 'SnakeByte']
 const CONTEXT_LENGTH = 50; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo-16k';
-const REFRESH_TIME = 5; // in seconds
+const EVENT_CONF = {
+  SRV_START: "blue",
+  WEBHOOK_ERR: "red",
+  KILLCMD_ERR: "red",
+  PARSE_ERR: "RED",
+  WEBHOOK: "blue"
+};
+// NEWMSG
+// KILLCMD
+// KILLCMD_ERR
+// ADD_QUEUE
+// ANSWERED
+// PARSE_ERR
+// WEBHOOK
+// WEBHOOK_ERR
+// SRV_START
+// FETCH_ERR
+// CHECK_ADMIN
+// CHECK_ADMIN_ERR
+// MSG_SAVE_ERR
+// MSG_LOAD_ERR
+// Include exceptions if you want
 
-export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL, REFRESH_TIME }
+export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL, EVENT_CONF }

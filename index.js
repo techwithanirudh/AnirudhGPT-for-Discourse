@@ -1,5 +1,4 @@
 import express from 'express';
-import chalk from 'chalk';
 import ora from 'ora';
 import { Configuration, OpenAIApi } from 'openai';
 import {
@@ -17,7 +16,10 @@ import {
 	getNextQuestion,
 	questionQueue
 } from './utils';
-import { OPENAI_API_KEY, OPENAI_BASE_URL, SYSTEM_PROMPT, PREFIX, CONTEXT_LENGTH, MODEL, REFRESH_TIME } from './config';
+import { OPENAI_API_KEY, OPENAI_BASE_URL, SYSTEM_PROMPT, PREFIX, CONTEXT_LENGTH, MODEL } from './config';
+import { event } from './utils';
+
+console.event = event;
 
 const app = express();
 const port = 3000; // Change to the desired port number
@@ -40,31 +42,26 @@ async function processNewMessages() {
 
 	for (const chatMessageObj of newMessages) {
 		const chatMessage = chatMessageObj.text;
-	
+
 		if (includesPrefix(chatMessage)) {
-			console.log('[NEWMSG]',
-				'From:',
-				chatMessageObj.author,
-				'with content:',
-				chatMessage
-			);
+			console.event('NEWMSG', `From: ${chatMessageObj.author}. Content: ${chatMessage}`);
 			const question = chatMessage.replace(PREFIX, '').trim();
 
 			if (question.includes("/suspend")) {
 				if (isUserStaff(chatMessageObj.author)) {
 					// Then check if is staff
-					console.log('[KILLCMD]', 'Killing process...');
+					console.event('KILLCMD', 'Killing process...');
 					await postMessage('[KILLCMD] Killing process...')
 					process.exit();
 				} else {
-					console.log('[KILLCMD_ERR]', 'Failed due to message is not from admin / moderator...')
+					console.event('KILLCMD_ERR', 'Failed due to message is not from admin / moderator...')
 					await postMessage('[KILLCMD] Failed due to message is not from admin / moderator...')
 				}
 			}
 
 			else if (question && !questionQueue.includes(question)) {
-				console.log('[ADD QUEUE] Adding question to queue:', question);
-				addToQueue({ 
+				console.event('ADD_QUEUE', `Adding question to queue: ${question}`);
+				addToQueue({
 					author: chatMessageObj.author,
 					text: question ? question : 'Answer the above question.'
 				});
@@ -74,13 +71,13 @@ async function processNewMessages() {
 }
 
 async function answerQuestion(question) {
-  // flashy at times.
-  // committed yet?
+	// flashy at times.
+	// committed yet?
 	const spinner = ora(`[PROCESS] Answering: ${question.text}`).start();
 
 	const contextMemory = messages.slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
-  // console.log(`[PROCESS LOG] Context memory:`, contextMemory);
+
 	const openAIMessages = [
 		{
 			role: 'system',
@@ -107,9 +104,9 @@ async function answerQuestion(question) {
 	const regex = new RegExp(PREFIX, 'ig');
 	const modifiedText = completionText.replace(regex, '[BOT PING]');
 	await postMessage(modifiedText);
-	
+
 	spinner.stop();
-	console.log('[ANSWERED]', completionText);
+	console.event('ANSWERED', completionText);
 }
 
 async function checkForMessages() {
@@ -127,31 +124,35 @@ async function checkForMessages() {
 			await answerQuestion(nextQuestion);
 		}
 	} catch (error) {
-		console.error('Error:', error);
+		console.event('PARSE_ERR', error)
 	}
 }
 
 // Main route
 app.get('/', (req, res) => {
+	// console.event('HOME', 'PING')
 	res.status(200).send('Pong');
 });
 
 // Webhook route for receiving new messages
 app.post('/webhook', async (req, res) => {
 	try {
+        // console.event("NOTIF_FULL", JSON.stringify(req))
+		// console.event("NOTIF_BODY", JSON.stringify(req.body))
+// gimme a min as i commit
 		oldMessages = loadOldMessagesFromFile();
 		checkForMessages();
 
-		console.log('[WEBHOOK]', 'Webhook triggered')
-		res.status(200).send('Message received and processed.');
+		console.event('WEBHOOK', 'Webhook triggered')
+		res.status(200).send('[WEBHOOK] Message received and processed.');
 	} catch (error) {
-		console.error('Error:', error);
-		res.status(500).send('[WEBHOOK_ERR]', 'Error processing message.');
+		console.event('WEBHOOK_ERR', error);
+		res.status(500).send('[WEBHOOK_ERR] Error processing message.');
 	}
 });
 
 // Start the Express server
 app.listen(port, () => {
-	console.log(`Server is listening on port ${port}`);
+	console.event('SRV_START', `Server is listening on port ${port}`);
 });
 //all done!

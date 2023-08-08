@@ -1,10 +1,13 @@
 import { writeFile, readFileSync } from 'fs';
+import { event } from './logging';
+
+console.event = event;
 
 // Function to save oldMessages to a JSON file for persistence
 function saveOldMessagesToFile(messages) {
 	writeFile("data/oldMessages.json", JSON.stringify(messages), (err) => {
 		if (err) {
-			console.error("Error saving old messages:", err);
+			console.event("MSG_SAVE_ERR", err);
 		}
 	});
 }
@@ -16,11 +19,11 @@ function loadOldMessagesFromFile() {
 		return JSON.parse(data);
 	} catch (err) {
 		if (err.code === "ENOENT") {
-			console.log("oldMessages.json not found. Creating a new file.");
+			console.event("MSG_LOAD_ERR", "oldMessages.json not found. Creating a new file.");
 			saveOldMessagesToFile([]);
 			return [];
 		} else {
-			console.error("[ERROR] Error loading old messages:", err);
+			console.event('MSG_LOAD_ERR', err);
 			return [];
 		}
 	}

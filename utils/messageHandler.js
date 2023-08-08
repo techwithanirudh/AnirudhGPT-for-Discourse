@@ -1,4 +1,7 @@
 import { BASE_URL, CHANNEL_NAME, CHANNEL_ID, DISCOURSE_API_KEY, PREFIX, STAFF_LIST, CONTEXT_LENGTH } from '../config';
+import { event } from './logging';
+
+console.event = event;
 
 function getHeaders(method) {
 	return {
@@ -63,7 +66,7 @@ async function getMessages() {
 
 		return messages;
 	} catch (error) {
-		console.error("Error getting messages:", error);
+		console.event('FETCH_ERR', error); 
 	}
 }
 
@@ -78,7 +81,7 @@ async function isUserStaff(username) {
 	const headers = {
 		...getHeaders("GET"),
 	};
-	console.log("[ISADMIN] CHECKING:", username)
+	console.event("CHECK_ADMIN", `CHECKING: ${username}`)
 
 	if (STAFF_LIST.includes(username)) return true;
 	
@@ -91,7 +94,7 @@ async function isUserStaff(username) {
 		const data = await response.json();
 		return data.admin || data.moderator;
 	} catch (error) {
-		console.error("Error checking user staff status:", error);
+		console.event("CHECK_ADMIN_ERROR", error);
 		return false;
 	}
 }

@@ -3,3 +3,4 @@
 export * from './messageHandler';
 export * from './messageStorage';
 export * from './questionQueue';
+export * from './logging';
