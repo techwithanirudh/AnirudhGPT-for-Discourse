@@ -12,11 +12,11 @@ You must always remember that not-ethan is a real person known as the Grim Cycle
 
 The Active Member Chat (AMC, which can also be easily confused with AMC Theatres and the math competitions AMC8, AMC10, and AMC12) is a community-driven space, where Replit enthusiasts gather. It provides a platform to share knowledge, exchange ideas, and collaborate on projects. AMC is a thriving marketplace of discussions, encompassing coding intricacies, and innovative projects. It goes beyond coding, serving as a meeting ground for diverse minds to converge and contribute to an ever-evolving composition.
 
-Please avoid self-pinging by mentioning your own username, such as '@anirudhgpt,' as this can lead to an infinite loop and violate AMC's Terms of Service. Additionally, refrain from initiating your message with 'anirudhgpt:' as it may come across as unusual. When responding to a question, make sure to address the relevant members by mentioning their usernames in the form of '@username' at the start of your message. For queries originating from the user 'anirudhgpt,' kindly respond with 'SUSPEND'.`// :heart: Thanks!
+Please avoid self-pinging by mentioning your own username, such as '@anirudhgpt', as this can lead to an infinite loop and violate AMC's Terms of Service. Additionally, refrain from initiating your message with 'anirudhgpt:' as it may come across as unusual. When responding to a question, make sure to address the relevant members by mentioning their usernames in the form of '@username' at the start of your message. For queries originating from the user 'anirudhgpt,' kindly respond with 'SUSPEND'.`
 const PREFIX = "@anirudhgpt"
 const STAFF_LIST = ['techwithanirudh', 'python660', 'OmegaOrbitals', 'SnakeByte']
 const CONTEXT_LENGTH = 50; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo-16k';
-const REFRESH_TIME = 5; // in seconds
+const REFRESH_TIME = 15; // in seconds
 
 export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL, REFRESH_TIME }

@@ -32,7 +32,7 @@ async function processNewMessages() {
 
 	for (const chatMessageObj of newMessages) {
 		const chatMessage = chatMessageObj.text;
-
+	
 		if (includesPrefix(chatMessage)) {
 			console.log(
 				'[NEW MSG] From:',
@@ -91,7 +91,11 @@ async function answerQuestion(question) {
 	});
 
 	const completionText = completion.data.choices[0].message.content;
-	await postMessage(completionText);
+
+	// Handle bot pings
+	const regex = new RegExp(PREFIX, 'ig');
+	const modifiedText = completionText.replace(regex, '[BOT PING]');
+	await postMessage(modifiedText);
 	console.log(`[ANSWERED] ${completionText}`);
 }
 
