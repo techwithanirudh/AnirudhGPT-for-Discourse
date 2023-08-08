@@ -58,7 +58,7 @@ async function processNewMessages() {
 				console.log('[ADD QUEUE] Adding question to queue:', question);
 				addToQueue({ 
 					author: chatMessageObj.author,
-					text: question
+					text: question ? question : 'Answer the above question.'
 				});
 			}
 		}
