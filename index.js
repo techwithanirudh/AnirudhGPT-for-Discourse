@@ -1,4 +1,6 @@
 import express from 'express';
+import chalk from 'chalk';
+import ora from 'ora';
 import { Configuration, OpenAIApi } from 'openai';
 import {
 	postMessage,
@@ -40,8 +42,8 @@ async function processNewMessages() {
 		const chatMessage = chatMessageObj.text;
 	
 		if (includesPrefix(chatMessage)) {
-			console.log(
-				'[NEW MSG] From:',
+			console.log('[NEWMSG]',
+				'From:',
 				chatMessageObj.author,
 				'with content:',
 				chatMessage
@@ -51,11 +53,11 @@ async function processNewMessages() {
 			if (question.includes("/suspend")) {
 				if (isUserStaff(chatMessageObj.author)) {
 					// Then check if is staff
-					console.log('[KILLCMD] Killing process...');
+					console.log('[KILLCMD]', 'Killing process...');
 					await postMessage('[KILLCMD] Killing process...')
 					process.exit();
 				} else {
-					console.log('[KILLCMD] Failed due to message is not from admin / moderator...')
+					console.log('[KILLCMD_ERR]', 'Failed due to message is not from admin / moderator...')
 					await postMessage('[KILLCMD] Failed due to message is not from admin / moderator...')
 				}
 			}
@@ -72,7 +74,10 @@ async function processNewMessages() {
 }
 
 async function answerQuestion(question) {
-	console.log(`[PROCESS] Answering: ${question.text}`);
+  // flashy at times.
+  // committed yet?
+	const spinner = ora(`[PROCESS] Answering: ${question.text}`).start();
+
 	const contextMemory = messages.slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
   // console.log(`[PROCESS LOG] Context memory:`, contextMemory);
@@ -102,10 +107,12 @@ async function answerQuestion(question) {
 	const regex = new RegExp(PREFIX, 'ig');
 	const modifiedText = completionText.replace(regex, '[BOT PING]');
 	await postMessage(modifiedText);
-	console.log(`[ANSWERED] ${completionText}`);
+	
+	spinner.stop();
+	console.log('[ANSWERED]', completionText);
 }
 
-async function mainLoop() {
+async function checkForMessages() {
 	try {
 		messages = await getMessages();
 		if (JSON.stringify(messages) !== JSON.stringify(oldMessages)) {
@@ -124,37 +131,27 @@ async function mainLoop() {
 	}
 }
 
-async function main() {
-	console.log('Starting Chatbot...');
-
-	oldMessages = loadOldMessagesFromFile();
-
-	mainLoop();
-	setInterval(mainLoop, REFRESH_TIME * 1000);
-}
-
 // Main route
 app.get('/', (req, res) => {
 	res.status(200).send('Pong');
 });
 
 // Webhook route for receiving new messages
-app.get('/webhook', async (req, res) => {
+app.post('/webhook', async (req, res) => {
 	try {
 		oldMessages = loadOldMessagesFromFile();
-		mainLoop();
-		
+		checkForMessages();
+
+		console.log('[WEBHOOK]', 'Webhook triggered')
 		res.status(200).send('Message received and processed.');
 	} catch (error) {
 		console.error('Error:', error);
-		res.status(500).send('Error processing message.');
+		res.status(500).send('[WEBHOOK_ERR]', 'Error processing message.');
 	}
 });
 
-// Start the bot
-main();
-
 // Start the Express server
 app.listen(port, () => {
-	console.log(`Express server is listening on port ${port}`);
+	console.log(`Server is listening on port ${port}`);
 });
+//all done!
