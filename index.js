@@ -37,13 +37,13 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 	const lastOldMessage = oldMessages.length > 0 ? oldMessages[oldMessages.length - 1] : { timestamp: 0 };
 	console.event("NOTIF_LASTOLDMSG", JSON.stringify(lastOldMessage))
 	const newMessages = messages[CHANNEL_ID].filter(
-		(msg) => msg.timestamp > lastOldMessage.timestamp
+		(msg) => new Date(msg.timestamp) > new Date(lastOldMessage.timestamp)
 	);
 
 
 	if (messages[CHANNEL_ID].length > 0 && oldMessages.length > 0) {
-		//console.event("NOTIF_ALL_MSG", JSON.stringify(messages[CHANNEL_ID].slice(-2)));
-		//console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
+		console.event("NOTIF_ALL_MSG", JSON.stringify(messages[CHANNEL_ID].slice(-2)));
+		console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
 		console.event("NOTIF_NEW_MSG", JSON.stringify(newMessages));
 	}
 
@@ -163,8 +163,7 @@ app.post('/webhook', async (req, res) => {
 		console.event("NOTIF_CHANNEL_ID", CHANNEL_ID);
 		let oldMessages = loadOldMessagesFromFile(CHANNEL_ID); // load
 		messages[CHANNEL_ID] = messages[CHANNEL_ID] ? messages[CHANNEL_ID] : [];
-		//console.log("hi")
-		//console.log(oldMessages);
+
 		await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 
 		res.status(200).send('[WEBHOOK] Message received and processed.');
