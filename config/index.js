@@ -19,7 +19,7 @@ The Active Member Chat (AMC, which can also be easily confused with AMC Theatres
 When responding to a question, make sure to address the relevant members by mentioning their usernames in the form of '@username' at the start of your message. Avoid pinging users in your response (in the form of '@username') as repeated pinging of users can be a violation of the AMC Community Guidlines.`
 const PREFIX = "@anirudhgpt"
 const STAFF_LIST = ['techwithanirudh', 'python660', 'OmegaOrbitals', 'SnakeByte']
-const CONTEXT_LENGTH = 15; // Number of messages to take into context
+const CONTEXT_LENGTH = 50; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo-16k';
 const EVENT_CONF = {
 	SRV_START: "blue",
@@ -38,25 +38,7 @@ const EVENT_CONF = {
 	MSG_SAVE_ERR: "red",
 	MSG_LOAD_ERR: "red",
 	OPENAI_ERR: "red",
-	hidden: ["NOTIF_ALL_MSG", "NOTIF_OLD_MSG", "NOTIF_NEW_MSG", "Q_QUEUE", "NOTIF_LASTOLDMSG"],
+	hidden: ["NOTIF_ALL_MSG", "NOTIF_OLD_MSG", "NOTIF_NEW_MSG", "NOTIF_QUEUE", "Q_QUEUE", "NOTIF_LASTOLDMSG"],
 };
-//plz check colors!!!
-// NEWMSG
-// KILLCMD
-// KILLCMD_ERR
-// ADD_QUEUE
-// ANSWERED
-// PARSE_ERR
-// WEBHOOK
-// WEBHOOK_ERR
-// SRV_START
-// FETCH_ERR
-// CHECK_ADMIN
-// CHECK_ADMIN_ERR
-// MSG_SAVE_ERR
-// MSG_LOAD_ERR
-// PROCESS
-// OPENAI_ERR
-// Include exceptions if you want
 
 export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL, EVENT_CONF }
