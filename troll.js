@@ -20,6 +20,7 @@ const TROLL_MESSAGE = `# TODO:
 # DONE:
 - Fix the channel bug when oldMessages.json is deleted and first new message is sent and it doesn't respond
 - Make it work in all channels
+- When 3-4 commands are simeltainously run with no response, the AI responses twice or thrice to all of the questions
 
 # OUT OF SCOPE:
 - Create a library`
