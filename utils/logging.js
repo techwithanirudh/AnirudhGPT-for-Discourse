@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { EVENT_CONF } from '../config';
 
 const event = (evtname, data) => {
-  if (EVENT_CONF.hidden.includes(evtname)){
+  if (EVENT_CONF?.hidden?.includes(evtname)){
     return;
   }
 	

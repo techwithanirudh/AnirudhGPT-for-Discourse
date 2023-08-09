@@ -13,23 +13,24 @@ function saveOldMessagesToFile(messages) {
 }
 
 // Function to load oldMessages from the JSON file
-function loadOldMessagesFromFile() {
+function loadOldMessagesFromFile(CHANNEL_ID) {
 	try {
 		const data = readFileSync("data/oldMessages.json");
-    if (!data){
-      console.event("MSG_LOAD_ERR", "oldMessage.json has no content. Rewriting.");
+		if (!data) {
+			console.event("MSG_LOAD_ERR", "oldMessage.json has no content. Rewriting.");
 			saveOldMessagesToFile([]);
-      return [];
-    }
-		return JSON.parse(data);
+			return {};
+		}
+		let retdata = JSON.parse(data)[CHANNEL_ID]
+		return retdata ? retdata : [];
 	} catch (err) {
 		if (err.code === "ENOENT") {
 			console.event("MSG_LOAD_ERR", "oldMessages.json not found. Creating a new file.");
 			saveOldMessagesToFile([]);
-			return [];
+			return {};
 		} else {
 			console.event('MSG_LOAD_ERR', err);
-			return [];
+			return {};
 		}
 	}
 }
