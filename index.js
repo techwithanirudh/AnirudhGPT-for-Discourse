@@ -34,18 +34,16 @@ const openai = new OpenAIApi(configuration);
 let messages = {};
 
 async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
-	//console.log(oldMessages)
 	const lastOldMessage = oldMessages.length > 0 ? oldMessages[oldMessages.length - 1] : { timestamp: 0 };
-	console.log(lastOldMessage)
+	console.event("NOTIF_LASTOLDMSG", JSON.stringify(lastOldMessage))
 	const newMessages = messages[CHANNEL_ID].filter(
 		(msg) => msg.timestamp > lastOldMessage.timestamp
 	);
 
-	//console.log(messages)
 
 	if (messages[CHANNEL_ID].length > 0 && oldMessages.length > 0) {
-		console.event("NOTIF_ALL_MSG", JSON.stringify(messages[CHANNEL_ID].slice(-2)));
-		console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
+		//console.event("NOTIF_ALL_MSG", JSON.stringify(messages[CHANNEL_ID].slice(-2)));
+		//console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
 		console.event("NOTIF_NEW_MSG", JSON.stringify(newMessages));
 	}
 
@@ -69,7 +67,7 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 			}
 
 			else if (question && !questionQueue.some(q => q.text === question)) {
-				console.log(questionQueue)
+				console.event("NOTIF_QUEUE", JSON.stringify(questionQueue))
 				console.event('ADD_QUEUE', `Adding question to queue: ${question}`);
 				addToQueue({
 					id: chatMessageObj.id,
@@ -128,7 +126,7 @@ async function answerQuestion(question) {
 }
 
 async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
-	console.log(questionQueue)
+	console.event("Q_QUEUE", questionQueue)
 	try {
 		messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
 		if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
@@ -158,14 +156,11 @@ app.get('/', (req, res) => {
 app.post('/webhook', async (req, res) => {
 	try {
 		console.event('WEBHOOK', 'Webhook triggered')
-		//console.log(req)
-		// console.event("NOTIF_FULL", JSON.stringify(req))
-		//console.event("NOTIF_BODY", JSON.stringify(req.body))
 
 		const { chat_channel_slug, chat_channel_id } = req.body.notification.data;
 		var CHANNEL_NAME = chat_channel_slug;
 		var CHANNEL_ID = chat_channel_id.toString();
-		console.log(CHANNEL_ID);
+		console.event("NOTIF_CHANNEL_ID", CHANNEL_ID);
 		let oldMessages = loadOldMessagesFromFile(CHANNEL_ID); // load
 		messages[CHANNEL_ID] = messages[CHANNEL_ID] ? messages[CHANNEL_ID] : [];
 		//console.log("hi")
