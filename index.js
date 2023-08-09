@@ -38,8 +38,10 @@ async function processNewMessages() {
 	const newMessages = messages.filter(
 		(msg) => !oldMessages.some((oldMsg) => oldMsg.text === msg.text)
 	);
-  
-    //console.log(messages.slice(-5), newMessages)
+
+	console.event("NOTIF_ALL_MSG", JSON.stringify(messages.slice(-5)));
+	console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-5)));
+	console.event("NOTIF_NEW_MSG", JSON.stringify(newMessages));
 
 	for (const chatMessageObj of newMessages) {
 		const chatMessage = chatMessageObj.text;
@@ -161,4 +163,3 @@ app.post('/webhook', async (req, res) => {
 app.listen(port, () => {
 	console.event('SRV_START', `Server is listening on port ${port}`);
 });
-//all done!
