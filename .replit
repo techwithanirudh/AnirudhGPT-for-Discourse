@@ -1,6 +1,5 @@
-run="node --experimental-specifier-resolution=node index.js & code-server --bind-addr 0.0.0.0:8080"
-
-hidden = [".config", "package-lock.json"]
+run="sh run.sh"
+hidden = [".config", "package-lock.json", "run.sh"]
 
 [[ports]]
 localPort = 3000
