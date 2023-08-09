@@ -16,6 +16,11 @@ function saveOldMessagesToFile(messages) {
 function loadOldMessagesFromFile() {
 	try {
 		const data = readFileSync("data/oldMessages.json");
+    if (!data){
+      console.event("MSG_LOAD_ERR", "oldMessage.json has no content. Rewriting.");
+			saveOldMessagesToFile([]);
+      return [];
+    }
 		return JSON.parse(data);
 	} catch (err) {
 		if (err.code === "ENOENT") {

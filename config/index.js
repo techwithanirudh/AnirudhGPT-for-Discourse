@@ -5,7 +5,7 @@ const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || '';
 const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
 const BASE_URL = "https://amc.discourse.group";
 const CHANNEL_NAME = 'general';
-const CHANNEL_ID = 2;
+const CHANNEL_ID = 154;
 const SYSTEM_PROMPT = `You are AnirudhGPT, a helpful comment bot created by Anirudh Sriram - a tech enthusiast who loves to code. You were built using NodeJS and OpenAI and respond using markdown formatting. 
 
 You are prompted to answer a prompt whenever you recieve a webhook request, which is a method for listening into events without using up uneccessary bandwidth. 
@@ -29,16 +29,17 @@ const EVENT_CONF = {
 	WEBHOOK: "blue",
 	ANSWERED: "green",
 	ANSWERING: "blue",
-	NEWMSG: "purple",
-	KILLCMD: "orange",
+	NEWMSG: "magenta",
+	KILLCMD: "red",
 	ADD_QUEUE: "yellow",
 	FETCH_ERR: "red",
 	CHECK_ADMIN: "blue",
 	CHECK_ADMIN_ERR: "red",
 	MSG_SAVE_ERR: "red",
-	MSG_LOAD_ERR: "red"
+	MSG_LOAD_ERR: "red",
+  OPENAI_ERR: "red"
 };
-
+//plz check colors!!!
 // NEWMSG
 // KILLCMD
 // KILLCMD_ERR
@@ -53,6 +54,8 @@ const EVENT_CONF = {
 // CHECK_ADMIN_ERR
 // MSG_SAVE_ERR
 // MSG_LOAD_ERR
+// PROCESS
+// OPENAI_ERR
 // Include exceptions if you want
 
 export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL, EVENT_CONF }

@@ -1,5 +1,4 @@
 import express from 'express';
-import ora from 'ora';
 import { Configuration, OpenAIApi } from 'openai';
 import {
 	postMessage,
@@ -39,6 +38,8 @@ async function processNewMessages() {
 	const newMessages = messages.filter(
 		(msg) => !oldMessages.some((oldMsg) => oldMsg.text === msg.text)
 	);
+  
+    //console.log(messages.slice(-5), newMessages)
 
 	for (const chatMessageObj of newMessages) {
 		const chatMessage = chatMessageObj.text;
@@ -71,10 +72,7 @@ async function processNewMessages() {
 }
 
 async function answerQuestion(question) {
-	// flashy at times.
-	// committed yet?
-	const spinner = ora(`[PROCESS] Answering: ${question.text}`).start();
-  console.log("")
+	console.event("PROCESS", `Answering: ${question.text}`);
 
 	const contextMemory = messages.slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
@@ -93,20 +91,26 @@ async function answerQuestion(question) {
 			content: `${question.author}: ${question.text}`,
 		},
 	];
+	let completion = { "data": { "choices": [{ "message": { "content": "Unknown Error" } }] } }
 
-	const completion = await openai.createChatCompletion({
-		model: MODEL,
-		messages: openAIMessages,
-	});
+	try {
+		completion = await openai.createChatCompletion({
+			model: MODEL,
+			messages: openAIMessages,
+		});
+	} catch (error) {
+		console.event('OPENAI_ERR', error)
+		completion.data.choices[0].message.content = `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
+	}
 
 	const completionText = completion.data.choices[0].message.content;
 
 	// Handle bot pings
 	const regex = new RegExp(PREFIX, 'ig');
+
 	const modifiedText = completionText.replace(regex, '[BOT PING]');
 	await postMessage(modifiedText);
 
-	spinner.stop();
 	console.event('ANSWERED', completionText);
 }
 
@@ -114,7 +118,7 @@ async function checkForMessages() {
 	try {
 		messages = await getMessages();
 		if (JSON.stringify(messages) !== JSON.stringify(oldMessages)) {
-			processNewMessages();
+			await processNewMessages();
 
 			saveOldMessagesToFile(messages);
 			oldMessages = messages;
@@ -143,7 +147,7 @@ app.post('/webhook', async (req, res) => {
 		console.event("NOTIF_BODY", JSON.stringify(req.body))
 
 		oldMessages = loadOldMessagesFromFile();
-		checkForMessages();
+		await checkForMessages();
 
 		console.event('WEBHOOK', 'Webhook triggered')
 		res.status(200).send('[WEBHOOK] Message received and processed.');
@@ -156,8 +160,5 @@ app.post('/webhook', async (req, res) => {
 // Start the Express server
 app.listen(port, () => {
 	console.event('SRV_START', `Server is listening on port ${port}`);
-  oldMessages = loadOldMessagesFromFile();
-	checkForMessages();
-  // Init check
 });
 //all done!

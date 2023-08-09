@@ -59,6 +59,10 @@ async function getMessages() {
 		});
 
 		const data = await response.json();
+		if (!!data.errors && !!data.errors[0]) {
+			throw new Error(data.errors[0]);
+		}
+		
 		let messages = [];
 		data.messages.forEach((message) => {
 			messages.push({ text: message.message, author: message.user.username });
@@ -66,7 +70,7 @@ async function getMessages() {
 
 		return messages;
 	} catch (error) {
-		console.event('FETCH_ERR', error); 
+		console.event('FETCH_ERR', error);
 	}
 }
 
@@ -84,7 +88,7 @@ async function isUserStaff(username) {
 	console.event("CHECK_ADMIN", `CHECKING: ${username}`)
 
 	if (STAFF_LIST.includes(username)) return true;
-	
+
 	try {
 		const response = await fetch(url, {
 			method: "GET",
