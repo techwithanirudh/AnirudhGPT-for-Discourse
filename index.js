@@ -31,17 +31,24 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-let messages = [];
-let oldMessages = [];
+let messages = {};
 
-async function processNewMessages() {
-	const newMessages = messages.filter(
-		(msg) => !oldMessages.some((oldMsg) => oldMsg.id === msg.id)
+async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
+	const lastOldMessage = oldMessages.length > 0 ? oldMessages[oldMessages.length - 1] : { timestamp: 0 };
+	console.event("NOTIF_LASTOLDMSG", JSON.stringify(lastOldMessage))
+	const newMessages = messages[CHANNEL_ID].filter(
+		(msg) => new Date(msg.timestamp) > new Date(lastOldMessage.timestamp)
 	);
 
-	console.event("NOTIF_ALL_MSG", JSON.stringify(messages.slice(-2)));
-	console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
-	console.event("NOTIF_NEW_MSG", JSON.stringify(newMessages));
+	// Moved here for less spam
+	saveOldMessagesToFile(messages);
+	oldMessages = messages[CHANNEL_ID];
+
+	if (messages[CHANNEL_ID].length > 0 && oldMessages.length > 0) {
+		console.event("NOTIF_ALL_MSG", JSON.stringify(messages[CHANNEL_ID].slice(-2)));
+		console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
+		console.event("NOTIF_NEW_MSG", JSON.stringify(newMessages));
+	}
 
 	for (const chatMessageObj of newMessages) {
 		const chatMessage = chatMessageObj.text;
@@ -54,29 +61,23 @@ async function processNewMessages() {
 				if (isUserStaff(chatMessageObj.author)) {
 					// Then check if is staff
 					console.event('KILLCMD', 'Killing process...');
-					await postMessage('[SUSPEND] Killing process...');
+					await postMessage('[SUSPEND] Killing process...', CHANNEL_NAME, CHANNEL_ID)
 					process.exit();
 				} else {
-					console.event('KILLCMD_ERR', 'Failed because message is not from an admin / moderator...');
-					await postMessage('[ERROR] Failed because message is not from an admin / moderator...');
+					console.event('KILLCMD_ERR', 'Failed because message is not from an admin / moderator...')
+					await postMessage('[ERROR] Failed because message is not from an admin / moderator...', CHANNEL_NAME, CHANNEL_ID)
 				}
 			}
 
-      else if (question.includes("/say")) {
-        if (isUserStaff(chatMessageObj.author)) {
-          console.event('SAYCMD', `Saying ${question}`);
-          await postMessage(question);
-        } else {
-          console.event('SAYCMD_ERR', 'Failed because message is not from an admin / moderator...');
-					await postMessage('[ERROR] Failed because message is not from an admin / moderator...');
-        }
-      }
-
-			else if (question && !questionQueue.includes(question)) {
+			else if (question && !questionQueue.some(q => q.text === question)) {
+				console.event("NOTIF_QUEUE", JSON.stringify(questionQueue))
 				console.event('ADD_QUEUE', `Adding question to queue: ${question}`);
 				addToQueue({
+					id: chatMessageObj.id,
 					author: chatMessageObj.author,
-					text: question
+					text: question,
+					CHANNEL_NAME: CHANNEL_NAME,
+					CHANNEL_ID: CHANNEL_ID
 				});
 			}
 		}
@@ -84,9 +85,10 @@ async function processNewMessages() {
 }
 
 async function answerQuestion(question) {
-	console.event("PROCESS", `Answering: ${question.text}`);
+	console.event("PROCESS", `CHANNEL: ${question.CHANNEL_NAME}. Answering: ${question.text}`);
+	let { CHANNEL_NAME, CHANNEL_ID } = question;
 
-	const contextMemory = messages.slice(-CONTEXT_LENGTH);
+	const contextMemory = messages[CHANNEL_ID].slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
 
 	const openAIMessages = [
@@ -121,24 +123,23 @@ async function answerQuestion(question) {
 	const regex = new RegExp(PREFIX, 'ig');
 
 	const modifiedText = completionText.replace(regex, '[BOT PING]');
-	await postMessage(modifiedText);
+	await postMessage(modifiedText, CHANNEL_NAME, CHANNEL_ID);
 
 	console.event('ANSWERED', completionText);
 }
 
-async function checkForMessages() {
+async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
+	console.event("Q_QUEUE", questionQueue)
 	try {
-		messages = await getMessages();
-		if (JSON.stringify(messages) !== JSON.stringify(oldMessages)) {
-			await processNewMessages();
-
-			saveOldMessagesToFile(messages);
-			oldMessages = messages;
+		messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
+		if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
+			await processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 		}
 
 		if (questionQueue.length > 0) {
 			const nextQuestion = getNextQuestion();
 			await answerQuestion(nextQuestion);
+			await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 		}
 	} catch (error) {
 		console.event('PARSE_ERR', error)
@@ -155,12 +156,15 @@ app.get('/', (req, res) => {
 app.post('/webhook', async (req, res) => {
 	try {
 		console.event('WEBHOOK', 'Webhook triggered')
-		//console.log(req)
-		// console.event("NOTIF_FULL", JSON.stringify(req))
-		console.event("NOTIF_BODY", JSON.stringify(req.body))
 
-		oldMessages = loadOldMessagesFromFile();
-		await checkForMessages();
+		const { chat_channel_slug, chat_channel_id } = req.body.notification.data;
+		var CHANNEL_NAME = chat_channel_slug;
+		var CHANNEL_ID = chat_channel_id.toString();
+		console.event("NOTIF_CHANNEL_ID", CHANNEL_ID);
+		let oldMessages = loadOldMessagesFromFile(CHANNEL_ID); // load
+		messages[CHANNEL_ID] = messages[CHANNEL_ID] ? messages[CHANNEL_ID] : [];
+
+		await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 
 		res.status(200).send('[WEBHOOK] Message received and processed.');
 	} catch (error) {
@@ -171,6 +175,5 @@ app.post('/webhook', async (req, res) => {
 
 // Start the Express server
 app.listen(port, () => {
-  console.log("\n")
 	console.event('SRV_START', `Server is listening on port ${port}`);
 });

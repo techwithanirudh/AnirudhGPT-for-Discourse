@@ -1,9 +1,9 @@
-import { BASE_URL, CHANNEL_NAME, CHANNEL_ID, DISCOURSE_API_KEY, PREFIX, STAFF_LIST, CONTEXT_LENGTH } from '../config';
+import { BASE_URL, DISCOURSE_API_KEY, PREFIX, STAFF_LIST, CONTEXT_LENGTH } from '../config';
 import { event } from './logging';
 
 console.event = event;
 
-function getHeaders(method) {
+function getHeaders(method, CHANNEL_NAME, CHANNEL_ID) {
 	return {
 		accept:
 			method === "GET"
@@ -26,11 +26,11 @@ function getHeaders(method) {
 	};
 }
 
-async function postMessage(msg) {
+async function postMessage(msg, CHANNEL_NAME, CHANNEL_ID) {
 	const url = `${BASE_URL}/chat/${CHANNEL_ID}`;
 	const body = `message=${encodeURIComponent(msg)}&staged_id=39278572-0717-4499-a578-c0dad1d999f9`;
 	const headers = {
-		...getHeaders("POST")
+		...getHeaders("POST", CHANNEL_NAME, CHANNEL_ID)
 	};
 
 	try {
@@ -46,10 +46,10 @@ async function postMessage(msg) {
 	}
 }
 
-async function getMessages() {
+async function getMessages(CHANNEL_NAME, CHANNEL_ID) {
 	const url = `${BASE_URL}/chat/api/channels/${CHANNEL_ID}/messages?fetch_from_last_read=false&page_size=${CONTEXT_LENGTH}`;
 	const headers = {
-		...getHeaders("GET"),
+		...getHeaders("GET", CHANNEL_NAME, CHANNEL_ID),
 	};
 
 	try {
@@ -62,10 +62,13 @@ async function getMessages() {
 		if (!!data.errors && !!data.errors[0]) {
 			throw new Error(data.errors[0]);
 		}
-		
+
 		let messages = [];
 		data.messages.forEach((message) => {
-			messages.push({ id: message.id, text: message.message, author: message.user.username });
+			messages.push({
+				timestamp: message.created_at,
+				id: message.id, text: message.message, author: message.user.username
+			});
 		});
 
 		return messages;
