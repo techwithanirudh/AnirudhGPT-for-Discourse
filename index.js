@@ -54,13 +54,23 @@ async function processNewMessages() {
 				if (isUserStaff(chatMessageObj.author)) {
 					// Then check if is staff
 					console.event('KILLCMD', 'Killing process...');
-					await postMessage('[SUSPEND] Killing process...')
+					await postMessage('[SUSPEND] Killing process...');
 					process.exit();
 				} else {
-					console.event('KILLCMD_ERR', 'Failed because message is not from an admin / moderator...')
-					await postMessage('[ERROR] Failed because message is not from an admin / moderator...')
+					console.event('KILLCMD_ERR', 'Failed because message is not from an admin / moderator...');
+					await postMessage('[ERROR] Failed because message is not from an admin / moderator...');
 				}
 			}
+
+      else if (question.includes("/say")) {
+        if (isUserStaff(chatMessageObj.author)) {
+          console.event('SAYCMD', `Saying ${question}`);
+          await postMessage(question);
+        } else {
+          console.event('SAYCMD_ERR', 'Failed because message is not from an admin / moderator...');
+					await postMessage('[ERROR] Failed because message is not from an admin / moderator...');
+        }
+      }
 
 			else if (question && !questionQueue.includes(question)) {
 				console.event('ADD_QUEUE', `Adding question to queue: ${question}`);
@@ -161,5 +171,6 @@ app.post('/webhook', async (req, res) => {
 
 // Start the Express server
 app.listen(port, () => {
+  console.log("\n")
 	console.event('SRV_START', `Server is listening on port ${port}`);
 });
