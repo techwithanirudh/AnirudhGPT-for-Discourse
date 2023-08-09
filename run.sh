@@ -1,1 +1,1 @@
-nodemon --experimental-specifier-resolution=node index.js --ignore data/**
+node --experimental-specifier-resolution=node index.js

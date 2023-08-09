@@ -65,7 +65,7 @@ async function getMessages() {
 		
 		let messages = [];
 		data.messages.forEach((message) => {
-			messages.push({ text: message.message, author: message.user.username });
+			messages.push({ id: message.id, text: message.message, author: message.user.username });
 		});
 
 		return messages;

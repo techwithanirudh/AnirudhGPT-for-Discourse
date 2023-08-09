@@ -36,11 +36,11 @@ let oldMessages = [];
 
 async function processNewMessages() {
 	const newMessages = messages.filter(
-		(msg) => !oldMessages.some((oldMsg) => oldMsg.text === msg.text)
+		(msg) => !oldMessages.some((oldMsg) => oldMsg.id === msg.id)
 	);
 
-	console.event("NOTIF_ALL_MSG", JSON.stringify(messages.slice(-5)));
-	console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-5)));
+	console.event("NOTIF_ALL_MSG", JSON.stringify(messages.slice(-2)));
+	console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
 	console.event("NOTIF_NEW_MSG", JSON.stringify(newMessages));
 
 	for (const chatMessageObj of newMessages) {
@@ -66,7 +66,7 @@ async function processNewMessages() {
 				console.event('ADD_QUEUE', `Adding question to queue: ${question}`);
 				addToQueue({
 					author: chatMessageObj.author,
-					text: question ? question : 'Answer the above question.'
+					text: question
 				});
 			}
 		}
@@ -144,6 +144,7 @@ app.get('/', (req, res) => {
 // Webhook route for receiving new messages
 app.post('/webhook', async (req, res) => {
 	try {
+		console.event('WEBHOOK', 'Webhook triggered')
 		//console.log(req)
 		// console.event("NOTIF_FULL", JSON.stringify(req))
 		console.event("NOTIF_BODY", JSON.stringify(req.body))
@@ -151,7 +152,6 @@ app.post('/webhook', async (req, res) => {
 		oldMessages = loadOldMessagesFromFile();
 		await checkForMessages();
 
-		console.event('WEBHOOK', 'Webhook triggered')
 		res.status(200).send('[WEBHOOK] Message received and processed.');
 	} catch (error) {
 		console.event('WEBHOOK_ERR', error);
