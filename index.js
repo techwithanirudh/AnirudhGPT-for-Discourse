@@ -40,10 +40,6 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 		(msg) => new Date(msg.timestamp) > new Date(lastOldMessage.timestamp)
 	);
 
-	// Moved here for less spam
-	saveOldMessagesToFile(messages);
-	oldMessages = messages[CHANNEL_ID];
-
 	if (messages[CHANNEL_ID].length > 0 && oldMessages.length > 0) {
 		console.event("NOTIF_ALL_MSG", JSON.stringify(messages[CHANNEL_ID].slice(-2)));
 		console.event("NOTIF_OLD_MSG", JSON.stringify(oldMessages.slice(-2)));
@@ -134,6 +130,9 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 		messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
 		if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
 			await processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+
+			saveOldMessagesToFile(messages);
+			oldMessages = messages[CHANNEL_ID];
 		}
 
 		if (questionQueue.length > 0) {
