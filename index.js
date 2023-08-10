@@ -110,10 +110,16 @@ async function answerQuestion(question) {
 	const completionText = completion.data.choices[0].message.content;
 
 	// Handle bot pings
-	const regex = new RegExp(PREFIX, 'ig');
+	const pingRegex = new RegExp(PREFIX, 'ig');
 
-	const modifiedText = completionText.replace(regex, '[BOT PING]');
-	await postMessage(modifiedText, CHANNEL_NAME, CHANNEL_ID);
+  // Handle messages prefixed with a username
+  const usernameRegex = /^@?[a-z0-9]{3,21}: /i
+    
+	const filteredText = completionText
+        .replace(pingRegex, '`[BOT PING]`')
+        .replace(usernameRegex, '');
+    
+	await postMessage(filteredText, CHANNEL_NAME, CHANNEL_ID);
 
 	console.event('ANSWERED', completionText);
 }

@@ -1,5 +1,6 @@
 import { BASE_URL, DISCOURSE_API_KEY, PREFIX, STAFF_LIST, CONTEXT_LENGTH } from '../config';
 import { event } from './logging';
+import { censor } from '../utils';
 
 console.event = event;
 
@@ -28,7 +29,9 @@ function getHeaders(method, CHANNEL_NAME, CHANNEL_ID) {
 
 async function postMessage(msg, CHANNEL_NAME, CHANNEL_ID) {
 	const url = `${BASE_URL}/chat/${CHANNEL_ID}`;
-	const body = `message=${encodeURIComponent(msg)}&staged_id=39278572-0717-4499-a578-c0dad1d999f9`;
+	
+	const cleanedMessage = censor(msg);  
+	const body = `message=${encodeURIComponent(cleanedMessage)}`;
 	const headers = {
 		...getHeaders("POST", CHANNEL_NAME, CHANNEL_ID)
 	};
