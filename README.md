@@ -21,6 +21,7 @@ AnirudhGPT For Discourse is a discourse AI bot built using webhooks, node-fetch,
 Contributions are welcome! Please submit a pull request with your changes.
 
 ## Authors
+
 - techwithanirudh
 - python660
 - Firepup650

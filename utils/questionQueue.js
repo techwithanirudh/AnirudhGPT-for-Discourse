@@ -8,8 +8,4 @@ function getNextQuestion() {
 	return questionQueue.shift();
 }
 
-export {
-	addToQueue,
-	getNextQuestion,
-	questionQueue
-};
+export { addToQueue, getNextQuestion, questionQueue };

@@ -10,13 +10,16 @@
 - Add support for posts on Discourse.
 
 # URGENT:
+
 - Suspend can be run by anyone
 - When a command is already executed like '/suspend' and the message is still in the history it is triggered until the 15 messages are gone
 
 # DONE:
+
 - Fix the channel bug when oldMessages.json is deleted and first new message is sent and it doesn't respond
 - Make it work in all channels
 - When 3-4 commands are simeltainously run with no response, the AI responses twice or thrice to all of the questions
 
 # OUT OF SCOPE:
+
 - Create a library

@@ -3,7 +3,7 @@
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || '';
 const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
-const BASE_URL = "https://amc.discourse.group";
+const BASE_URL = 'https://amc.discourse.group';
 const CHANNEL_NAME = 'general';
 const CHANNEL_ID = 154;
 const SYSTEM_PROMPT = `You are AnirudhGPT, a helpful comment bot created by Anirudh Sriram - a tech enthusiast who loves to code. You were built using NodeJS and OpenAI and respond using markdown formatting. 
@@ -16,29 +16,54 @@ You must always remember that not-ethan is a real person known as the Grim Cycle
 
 The Active Member Chat (AMC, which can also be easily confused with AMC Theatres and the math competitions AMC8, AMC10, and AMC12) is a community-driven space, where Replit enthusiasts gather. It provides a platform to share knowledge, exchange ideas, and collaborate on projects. AMC is a thriving marketplace of discussions, encompassing coding intricacies, and innovative projects. It goes beyond coding, serving as a meeting ground for diverse minds to converge and contribute to an ever-evolving composition.
 
-When responding to a question, make sure to address the relevant members by mentioning their usernames in the form of '@username' at the start of your message. Avoid pinging users in your response (in the form of '@username') as repeated pinging of users can be a violation of the AMC Community Guidlines.`
-const PREFIX = "@anirudhgpt"
-const STAFF_LIST = ['techwithanirudh', 'python660', 'OmegaOrbitals', 'SnakeByte']
+When responding to a question, make sure to address the relevant members by mentioning their usernames in the form of '@username' at the start of your message. Avoid pinging users in your response (in the form of '@username') as repeated pinging of users can be a violation of the AMC Community Guidlines.`;
+const PREFIX = '@anirudhgpt';
+const STAFF_LIST = [
+	'techwithanirudh',
+	'python660',
+	'OmegaOrbitals',
+	'SnakeByte',
+];
 const CONTEXT_LENGTH = 15; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo-16k';
 const EVENT_CONF = {
-	SRV_START: "blue",
-	WEBHOOK_ERR: "red",
-	KILLCMD_ERR: "red",
-	PARSE_ERR: "red",
-	WEBHOOK: "blue",
-	ANSWERED: "green",
-	ANSWERING: "blue",
-	NEWMSG: "magenta",
-	KILLCMD: "red",
-	ADD_QUEUE: "yellow",
-	FETCH_ERR: "red",
-	CHECK_ADMIN: "blue",
-	CHECK_ADMIN_ERR: "red",
-	MSG_SAVE_ERR: "red",
-	MSG_LOAD_ERR: "red",
-	OPENAI_ERR: "red",
-	hidden: ["NOTIF_ALL_MSG", "NOTIF_OLD_MSG", "NOTIF_NEW_MSG", "NOTIF_QUEUE", "Q_QUEUE", "NOTIF_LASTOLDMSG"],
+	SRV_START: 'blue',
+	WEBHOOK_ERR: 'red',
+	KILLCMD_ERR: 'red',
+	PARSE_ERR: 'red',
+	WEBHOOK: 'blue',
+	ANSWERED: 'green',
+	ANSWERING: 'blue',
+	NEWMSG: 'magenta',
+	KILLCMD: 'red',
+	ADD_QUEUE: 'yellow',
+	FETCH_ERR: 'red',
+	CHECK_ADMIN: 'blue',
+	CHECK_ADMIN_ERR: 'red',
+	MSG_SAVE_ERR: 'red',
+	MSG_LOAD_ERR: 'red',
+	OPENAI_ERR: 'red',
+	hidden: [
+		'NOTIF_ALL_MSG',
+		'NOTIF_OLD_MSG',
+		'NOTIF_NEW_MSG',
+		'NOTIF_QUEUE',
+		'Q_QUEUE',
+		'NOTIF_LASTOLDMSG',
+	],
 };
 
-export { OPENAI_API_KEY, OPENAI_BASE_URL, DISCOURSE_API_KEY, BASE_URL, CHANNEL_NAME, CHANNEL_ID, SYSTEM_PROMPT, PREFIX, STAFF_LIST, CONTEXT_LENGTH, MODEL, EVENT_CONF }
+export {
+	OPENAI_API_KEY,
+	OPENAI_BASE_URL,
+	DISCOURSE_API_KEY,
+	BASE_URL,
+	CHANNEL_NAME,
+	CHANNEL_ID,
+	SYSTEM_PROMPT,
+	PREFIX,
+	STAFF_LIST,
+	CONTEXT_LENGTH,
+	MODEL,
+	EVENT_CONF,
+};
