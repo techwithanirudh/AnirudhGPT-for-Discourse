@@ -19,7 +19,7 @@ The Active Member Chat (AMC, which can also be easily confused with AMC Theatres
 When responding to a question, make sure to address the relevant members by mentioning their usernames in the form of '@username' at the start of your message. Avoid pinging users in your response (in the form of '@username') as repeated pinging of users can be a violation of the AMC Community Guidlines.`
 const PREFIX = "@anirudhgpt"
 const STAFF_LIST = ['techwithanirudh', 'python660', 'OmegaOrbitals', 'SnakeByte']
-const CONTEXT_LENGTH = 50; // Number of messages to take into context
+const CONTEXT_LENGTH = 15; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo-16k';
 const EVENT_CONF = {
 	SRV_START: "blue",

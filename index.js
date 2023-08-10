@@ -17,6 +17,7 @@ import {
 } from './utils';
 import { OPENAI_API_KEY, OPENAI_BASE_URL, SYSTEM_PROMPT, PREFIX, CONTEXT_LENGTH, MODEL } from './config';
 import { event } from './utils';
+import checkForCommand from './utils/commands';
 
 console.event = event;
 
@@ -53,21 +54,10 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 			console.event('NEWMSG', `From: ${chatMessageObj.author}. Content: ${chatMessage}`);
 			const question = chatMessage.replace(PREFIX, '').trim();
 
-			if (question.includes("/suspend")) {
-				if (isUserStaff(chatMessageObj.author)) {
-					// Then check if is staff
-					console.event('KILLCMD', 'Killing process...');
-					await postMessage('[SUSPEND] Killing process...', CHANNEL_NAME, CHANNEL_ID)
-					process.exit();
-				} else {
-					console.event('KILLCMD_ERR', 'Failed because message is not from an admin / moderator...')
-					await postMessage('[ERROR] Failed because message is not from an admin / moderator...', CHANNEL_NAME, CHANNEL_ID)
-				}
-			}
-
-			else if (question && !questionQueue.some(q => q.text === question)) {
+			if (question && !questionQueue.some(q => q.text === question)) {
 				console.event("NOTIF_QUEUE", JSON.stringify(questionQueue))
 				console.event('ADD_QUEUE', `Adding question to queue: ${question}`);
+
 				addToQueue({
 					id: chatMessageObj.id,
 					author: chatMessageObj.author,
@@ -83,6 +73,10 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 async function answerQuestion(question) {
 	console.event("PROCESS", `CHANNEL: ${question.CHANNEL_NAME}. Answering: ${question.text}`);
 	let { CHANNEL_NAME, CHANNEL_ID } = question;
+	
+	const isCommand = await checkForCommand(question, CHANNEL_NAME, CHANNEL_ID);
+	console.log('ISCOMMAND', isCommand)
+	if (isCommand) return;
 
 	const contextMemory = messages[CHANNEL_ID].slice(-CONTEXT_LENGTH);
 	contextMemory.pop();
