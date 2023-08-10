@@ -1,17 +1,13 @@
-// HOW TO RUN:
-// node --experimental-specifier-resolution=node troll.js
-
-import { postMessage } from "./utils";
-
-const TROLL_MESSAGE = `# TODO:
+# TODO:
 
 - Create README and say how to setup
 - Create credits and include all the contributors me, py660, fp, 9pfs
 - Reorganize extra commands like /say or /suspend to be in commands.js
 - Have two options, webhook mode and interval mode
-- Add moderation dashboard, like AnirudhGPT (Replitbot)
-- Use redis for data storage, like AnirudhGPT (Replitbot)
-- Create a landing page, like AnirudhGPT (replitbot)
+- Add moderation dashboard, like AnirudhGPT (replit-bot)
+- Use redis for data storage, like AnirudhGPT (replit-bot)
+- Create a landing page, like AnirudhGPT (replit-bot)
+- Add support for posts on Discourse.
 
 # URGENT:
 - Suspend can be run by anyone
@@ -23,5 +19,4 @@ const TROLL_MESSAGE = `# TODO:
 - When 3-4 commands are simeltainously run with no response, the AI responses twice or thrice to all of the questions
 
 # OUT OF SCOPE:
-- Create a library`
-postMessage(TROLL_MESSAGE, "anirudhgpt", "1")
+- Create a library
