@@ -75,7 +75,7 @@ async function answerQuestion(question) {
 	let { CHANNEL_NAME, CHANNEL_ID } = question;
 	
 	const isCommand = await checkForCommand(question, CHANNEL_NAME, CHANNEL_ID);
-	console.log('ISCOMMAND', isCommand)
+	console.event('CHECK_CMD', isCommand)
 	if (isCommand) return;
 
 	const contextMemory = messages[CHANNEL_ID].slice(-CONTEXT_LENGTH);

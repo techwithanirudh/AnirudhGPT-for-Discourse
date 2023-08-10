@@ -7,18 +7,18 @@ console.event = event;
 const commands = {
     "say": { handler: handleSay, staffOnly: true },
     "help": { handler: handleHelp, staffOnly: false },
-    "suspend": { handler: handleSuspend, staffOnly: true }
+    "suspend": { handler: handleSuspend, staffOnly: true },
+    "image": { handler: handleImage, staffOnly: false }
 };
 
 // Define command functions
-async function handleSay(question, CHANNEL_ID, CHANNEL_NAME) {
+async function handleSay(question, CHANNEL_NAME, CHANNEL_ID) {
     await postMessage(question, CHANNEL_NAME, CHANNEL_ID);
 
-    console.log(question, CHANNEL_ID, CHANNEL_NAME);
     console.event('ANSWERED', 'Said: ' + question);
 }
 
-async function handleHelp(_question, CHANNEL_ID, CHANNEL_NAME) {
+async function handleHelp(_question, CHANNEL_NAME, CHANNEL_ID) {
     // Implement the help functionality
     const helpMessage = `
     **Available commands:**
@@ -28,12 +28,12 @@ async function handleHelp(_question, CHANNEL_ID, CHANNEL_NAME) {
     \`/image\` - Generate an image
     `;
 
-    await postMessage(helpMessage, CHANNEL_NAME, CHANNEL_ID);
+    await postMessage(helpMessage, CHANNEL_NAME, CHANNEL_ID); // no, name before id.
 
     console.event('ANSWERED', helpMessage);
 }
 
-async function handleSuspend(_question, CHANNEL_ID, CHANNEL_NAME) {
+async function handleSuspend(_question, CHANNEL_NAME, CHANNEL_ID) {
     console.event('KILLCMD', 'Killing process...');
     await postMessage('[SUSPEND] Killing process...', CHANNEL_NAME, CHANNEL_ID);
     process.exit();
@@ -41,7 +41,7 @@ async function handleSuspend(_question, CHANNEL_ID, CHANNEL_NAME) {
 
 
 // Function to check for commands
-async function checkForCommand(question, CHANNEL_ID, CHANNEL_NAME) {
+async function checkForCommand(question, CHANNEL_NAME, CHANNEL_ID) {
     const commandPrefixes = ["@", "/"]; // Define the prefixes for commands
 
     for (const prefix of commandPrefixes) {
@@ -54,7 +54,7 @@ async function checkForCommand(question, CHANNEL_ID, CHANNEL_NAME) {
                     console.event('PERMISSION_ERR', 'User does not have permission to execute this command.');
                     await postMessage('[ERROR] User does not have permission to execute this command.', CHANNEL_NAME, CHANNEL_ID);
                 } else {
-                    await commandInfo.handler(question.text, CHANNEL_ID, CHANNEL_NAME);
+                    await commandInfo.handler(question.text, CHANNEL_NAME, CHANNEL_ID);
                     return true;
                 }
             } else {
