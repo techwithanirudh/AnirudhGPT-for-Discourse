@@ -129,7 +129,7 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 	try {
 		messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
 		if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
-			await processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+			processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 
 			saveOldMessagesToFile(messages);
 			oldMessages = messages[CHANNEL_ID];
