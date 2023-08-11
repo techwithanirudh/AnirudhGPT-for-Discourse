@@ -110,14 +110,14 @@ async function handlePrompt(question, CHANNEL_NAME, CHANNEL_ID) {
 
 	if (PROMPTS[prompt] && actualQuestion) {
 		const openAIMessages = [
-			{
-				role: 'system',
-				content: PROMPTS[prompt],
-			},
 			...contextMemory.map((msg) => ({
 				role: 'user',
 				content: `${msg.author}: ${msg.text}`,
 			})),
+			{
+				role: 'system',
+				content: PROMPTS[prompt],
+			},
 			{
 				role: 'user',
 				content: `${question.author}: ${actualQuestion}`,

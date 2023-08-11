@@ -89,14 +89,14 @@ async function answerQuestion(question) {
 	contextMemory.pop();
 
 	const openAIMessages = [
-		{
-			role: 'system',
-			content: SYSTEM_PROMPT,
-		},
 		...contextMemory.map((msg) => ({
 			role: 'user',
 			content: `${msg.author}: ${msg.text}`,
 		})),
+		{
+			role: 'system',
+			content: SYSTEM_PROMPT,
+		},
 		{
 			role: 'user',
 			content: `${question.author}: ${question.text}`,
@@ -139,50 +139,49 @@ async function answerQuestion(question) {
 
 async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 	console.event('Q_QUEUE', questionQueue);
-	//try {
-	messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
-	if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
-		processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+	try {
+		messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
+		if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
+			processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 
-		saveOldMessagesToFile(messages);
-		oldMessages = messages[CHANNEL_ID];
-	}
+			saveOldMessagesToFile(messages);
+			oldMessages = messages[CHANNEL_ID];
+		}
 
-	if (questionQueue.length > 0) {
-		const nextQuestion = getNextQuestion();
-		await answerQuestion(nextQuestion);
-		await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+		if (questionQueue.length > 0) {
+			const nextQuestion = getNextQuestion();
+			await answerQuestion(nextQuestion);
+			await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+		}
+	} catch (error) {
+		console.event('PARSE_ERR', error)
 	}
-	//} catch (error) {
-	//	console.event('PARSE_ERR', error)
-	//}
 }
 
 // Main route
 app.get('/', (req, res) => {
-	// console.event('HOME', 'PING')
 	res.status(200).send('Pong');
 });
 
 // Webhook route for receiving new messages
 app.post('/webhook', async (req, res) => {
-	//try {
-	console.event('WEBHOOK', 'Webhook triggered');
+	try {
+		console.event('WEBHOOK', 'Webhook triggered');
 
-	const { chat_channel_slug, chat_channel_id } = req.body.notification.data;
-	var CHANNEL_NAME = chat_channel_slug;
-	var CHANNEL_ID = chat_channel_id.toString();
-	console.event('NOTIF_CHANNEL_ID', CHANNEL_ID);
-	let oldMessages = loadOldMessagesFromFile(CHANNEL_ID); // load
-	messages[CHANNEL_ID] = messages[CHANNEL_ID] ? messages[CHANNEL_ID] : [];
+		const { chat_channel_slug, chat_channel_id } = req.body.notification.data;
+		var CHANNEL_NAME = chat_channel_slug;
+		var CHANNEL_ID = chat_channel_id.toString();
+		console.event('NOTIF_CHANNEL_ID', CHANNEL_ID);
+		let oldMessages = loadOldMessagesFromFile(CHANNEL_ID); // load
+		messages[CHANNEL_ID] = messages[CHANNEL_ID] ? messages[CHANNEL_ID] : [];
 
-	await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+		await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 
-	res.status(200).send('[WEBHOOK] Message received and processed.');
-	//} catch (error) {
-	//	console.event('WEBHOOK_ERR', error);
-	//	res.status(500).send('[WEBHOOK_ERR] Error processing message.');
-	//}
+		res.status(200).send('[WEBHOOK] Message received and processed.');
+	} catch (error) {
+		console.event('WEBHOOK_ERR', error);
+		res.status(500).send('[WEBHOOK_ERR] Error processing message.');
+	}
 });
 
 // Start the Express server
