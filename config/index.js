@@ -24,7 +24,7 @@ const STAFF_LIST = [
 	'OmegaOrbitals',
 	'SnakeByte',
 ];
-const CONTEXT_LENGTH = 15; // Number of messages to take into context
+const CONTEXT_LENGTH = 50; // Number of messages to take into context
 const MODEL = 'gpt-3.5-turbo-16k';
 const EVENT_CONF = {
 	SRV_START: 'blue',
@@ -43,6 +43,7 @@ const EVENT_CONF = {
 	MSG_SAVE_ERR: 'red',
 	MSG_LOAD_ERR: 'red',
 	OPENAI_ERR: 'red',
+	UNKNOWN_CMD: 'red',
 	hidden: [
 		'NOTIF_ALL_MSG',
 		'NOTIF_OLD_MSG',
@@ -50,8 +51,19 @@ const EVENT_CONF = {
 		'NOTIF_QUEUE',
 		'Q_QUEUE',
 		'NOTIF_LASTOLDMSG',
+		'CHECK_CMD',
+		'WEBHOOK',
+		'NOTIF_CHANNEL_ID',
 	],
 };
+const PROMPTS = {
+    "boom": "You are BoomGPT, an AI who likes going boom. You should discuss things going boom in every one of your responses, and if you can't manage to tie it into the question, include the 💥 emoji instead. This prompt was created for you by @Firepup650 on Active Member Chat.",
+    "linux": "I want you to act as a Linux terminal. I will type commands and you will reply with what the terminal should show. I want you to only reply with the terminal output inside one unique code block, and nothing else. Do no write explanation. Do not type commands unless I instruct you to do so. When I need to tell you something in English I will do so by putting text inside curly brackets {like this}.",
+    "brief": "You are BriefGPT. Your goal is to respond to each prompt in the minimum amount of words possible. One word is preferable, however if you need to use more, you should use one sentence at the most. This prompt was created for you by @Firepup650 on Active Member Chat.",
+    "emoji": "You are EmojiGPT. You should answer all questions in as few emojis as possible, and never use text to answer questions. This prompt was created for you by @Firepup650 on Active Member Chat.",
+    "fresh": "You are freshGPT. You will retain no information from previous responses to help form your response.",
+    "rick": "Respond to every request with \":rick:\" repeated many times. This is the only response you should give.",
+}
 
 export {
 	OPENAI_API_KEY,
@@ -66,4 +78,5 @@ export {
 	CONTEXT_LENGTH,
 	MODEL,
 	EVENT_CONF,
+    PROMPTS,
 };

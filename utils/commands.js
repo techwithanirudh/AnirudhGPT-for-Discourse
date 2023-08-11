@@ -1,7 +1,7 @@
 import { event } from './logging';
-import { isUserStaff, postMessage } from './messageHandler';
+import { getMessages, isUserStaff, postMessage } from './messageHandler';
 import { Configuration, OpenAIApi } from 'openai';
-import { OPENAI_API_KEY, OPENAI_BASE_URL } from '../config';
+import { OPENAI_API_KEY, OPENAI_BASE_URL, PROMPTS, PREFIX, MODEL, CONTEXT_LENGTH } from '../config';
 
 console.event = event;
 
@@ -17,7 +17,7 @@ const commands = {
 	help: { handler: handleHelp, staffOnly: false },
 	suspend: { handler: handleSuspend, staffOnly: true },
 	image: { handler: handleImage, staffOnly: false },
-	variant: { handler: handleVariant, staffOnly: false },
+	prompt: { handler: handlePrompt, staffOnly: false },
 };
 
 // Define command functions
@@ -34,7 +34,8 @@ async function handleHelp(_question, CHANNEL_NAME, CHANNEL_ID) {
   \`/say <message>\` - Make the bot say something
   \`/help\` - Show this help message
   \`/suspend\` - Suspend the bot
-  \`/image\` - Generate an image
+  \`/image <prompt>\` - Generate an image
+  \`/prompt <prompt> <message>\` - Talk to a different prompt (Pre-defined)
   `;
 
 	await postMessage(helpMessage, CHANNEL_NAME, CHANNEL_ID); // no, name before id.
@@ -56,26 +57,7 @@ async function handleImage(question, CHANNEL_NAME, CHANNEL_ID) {
 	});
 	const image_url = response.data.data[0].url;
 
-	const markdown = `![Generated image](${image_url})`;
-	await postMessage(markdown, CHANNEL_NAME, CHANNEL_ID);
-}
-
-async function handleVariant(question, CHANNEL_NAME, CHANNEL_ID) {
-	const imageUrl = question;
-
-	// GET IMAGE BUFFER
-	const img = await fetch(imageUrl);
-	const imageBuffer = await img.buffer();
-
-	const response = await openai.createImageVariation(
-		imageBuffer,
-		1,
-		'1024x1024'
-	);
-	//image, n, size, responseFormat, user
-	const image_url = response.data.data[0].url;
-
-	const markdown = `![Modified image](${image_url})`;
+	const markdown = `![${question}](${image_url})`;
 	await postMessage(markdown, CHANNEL_NAME, CHANNEL_ID);
 }
 
@@ -100,6 +82,7 @@ async function checkForCommand(question, CHANNEL_NAME, CHANNEL_ID) {
 						CHANNEL_NAME,
 						CHANNEL_ID
 					);
+					return true;
 				} else {
 					await commandInfo.handler(parsedQuestion, CHANNEL_NAME, CHANNEL_ID);
 					return true;
@@ -115,6 +98,76 @@ async function checkForCommand(question, CHANNEL_NAME, CHANNEL_ID) {
 	}
 
 	return false;
+}
+
+async function handlePrompt(question, CHANNEL_NAME, CHANNEL_ID) {
+	const prompt = question.split(' ')[0];
+	const actualQuestion = question.split(' ').slice(1).join(' ');
+
+	const messages = await getMessages(CHANNEL_NAME, CHANNEL_ID);
+	const contextMemory = messages.slice(-CONTEXT_LENGTH);
+	contextMemory.pop();
+
+	if (PROMPTS[prompt] && actualQuestion) {
+		const openAIMessages = [
+			{
+				role: 'system',
+				content: PROMPTS[prompt],
+			},
+			...contextMemory.map((msg) => ({
+				role: 'user',
+				content: `${msg.author}: ${msg.text}`,
+			})),
+			{
+				role: 'user',
+				content: `${question.author}: ${actualQuestion}`,
+			},
+		];
+		let completion = {
+			data: { choices: [{ message: { content: 'Unknown Error' } }] },
+		};
+
+		try {
+			completion = await openai.createChatCompletion({
+				model: MODEL,
+				messages: openAIMessages,
+			});
+		} catch (error) {
+			console.event('OPENAI_ERR', error);
+			const messageContent = error.response
+				? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.statusText}\n\`\`\``
+				: `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
+
+			completion.data.choices[0].message.content = messageContent;
+		}
+
+		const completionText = completion.data.choices[0].message.content;
+
+		// Handle bot pings
+		const pingRegex = new RegExp(PREFIX, 'ig');
+
+		// Handle messages prefixed with a username
+		const usernameRegex = /^@?[a-z0-9]{3,21}: /i;
+
+		const filteredText = completionText
+			.replace(pingRegex, '`[BOT PING]`')
+			.replace(usernameRegex, '');
+
+		await postMessage(filteredText, CHANNEL_NAME, CHANNEL_ID);
+
+		console.event('ANSWERED', completionText);
+	} else {
+		await postMessage(
+			`[ERROR] Format incomplete or unknown prompt.
+
+[HELP] /prompt <model> <question>
+prompt - One of ${Object.keys(PROMPTS).join(', ')}
+question - A question`,
+			CHANNEL_NAME,
+			CHANNEL_ID
+		);
+		console.event('UNKNOWN_PROMPT', `[ERROR] Format incomplete or unknown prompt.`);
+	}
 }
 
 export default checkForCommand;

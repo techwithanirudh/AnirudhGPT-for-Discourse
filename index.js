@@ -113,7 +113,11 @@ async function answerQuestion(question) {
 		});
 	} catch (error) {
 		console.event('OPENAI_ERR', error);
-		completion.data.choices[0].message.content = `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
+		const messageContent = error.response
+			? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.statusText}\n\`\`\``
+			: `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
+
+		completion.data.choices[0].message.content = messageContent;
 	}
 
 	const completionText = completion.data.choices[0].message.content;

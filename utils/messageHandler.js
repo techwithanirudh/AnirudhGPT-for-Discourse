@@ -110,7 +110,7 @@ async function isUserStaff(username) {
 		});
 
 		const data = await response.json();
-		return data.admin || data.moderator;
+		return data.user.admin || data.user.moderator;
 	} catch (error) {
 		console.event('CHECK_ADMIN_ERROR', error);
 		return false;
