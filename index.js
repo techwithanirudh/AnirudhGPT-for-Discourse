@@ -154,7 +154,7 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 			await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 		}
 	} catch (error) {
-		console.event('PARSE_ERR', error)
+		console.event('PARSE_ERR', error);
 	}
 }
 
@@ -170,7 +170,7 @@ app.post('/webhook', async (req, res) => {
 
 		const { chat_channel_slug, chat_channel_id } = req.body.notification.data;
 		var CHANNEL_NAME = chat_channel_slug;
-		var CHANNEL_ID = chat_channel_id.toString();
+		var CHANNEL_ID = chat_channel_id && chat_channel_id.toString();
 		console.event('NOTIF_CHANNEL_ID', CHANNEL_ID);
 		let oldMessages = loadOldMessagesFromFile(CHANNEL_ID); // load
 		messages[CHANNEL_ID] = messages[CHANNEL_ID] ? messages[CHANNEL_ID] : [];

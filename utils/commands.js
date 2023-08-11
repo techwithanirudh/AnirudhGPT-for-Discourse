@@ -1,7 +1,14 @@
 import { event } from './logging';
 import { getMessages, isUserStaff, postMessage } from './messageHandler';
 import { Configuration, OpenAIApi } from 'openai';
-import { OPENAI_API_KEY, OPENAI_BASE_URL, PROMPTS, PREFIX, MODEL, CONTEXT_LENGTH } from '../config';
+import {
+	OPENAI_API_KEY,
+	OPENAI_BASE_URL,
+	PROMPTS,
+	PREFIX,
+	MODEL,
+	CONTEXT_LENGTH,
+} from '../config';
 
 console.event = event;
 
@@ -59,6 +66,7 @@ async function handleImage(question, CHANNEL_NAME, CHANNEL_ID) {
 
 	const markdown = `![${question}](${image_url})`;
 	await postMessage(markdown, CHANNEL_NAME, CHANNEL_ID);
+	console.event('ANSWERED', markdown);
 }
 
 // Function to check for commands
@@ -166,7 +174,10 @@ question - A question`,
 			CHANNEL_NAME,
 			CHANNEL_ID
 		);
-		console.event('UNKNOWN_PROMPT', `[ERROR] Format incomplete or unknown prompt.`);
+		console.event(
+			'UNKNOWN_PROMPT',
+			`[ERROR] Format incomplete or unknown prompt.`
+		);
 	}
 }
 
