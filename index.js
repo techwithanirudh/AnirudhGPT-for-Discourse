@@ -1,8 +1,8 @@
 import express from 'express';
 import { Configuration, OpenAIApi } from 'openai';
-import { postMessage, getMessages, includesPrefix, isUserStaff } from './utils';
+import { postMessage, getMessages, includesPrefix } from './utils';
 import { saveOldMessagesToFile, loadOldMessagesFromFile } from './utils';
-import { addToQueue, getNextQuestion, questionQueue } from './utils';
+import { addToQueue, questionQueue } from './utils';
 import {
 	OPENAI_API_KEY,
 	OPENAI_BASE_URL,
@@ -68,6 +68,7 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 					text: question,
 					CHANNEL_NAME: CHANNEL_NAME,
 					CHANNEL_ID: CHANNEL_ID,
+					answered: false,
 				});
 			}
 		}
@@ -75,6 +76,8 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 }
 
 async function answerQuestion(question) {
+	question.answered = true;
+
 	console.event(
 		'PROCESS',
 		`CHANNEL: ${question.CHANNEL_NAME}. Answering: ${question.text}`
@@ -148,11 +151,14 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 			oldMessages = messages[CHANNEL_ID];
 		}
 
-		if (questionQueue.length > 0) {
-			const nextQuestion = getNextQuestion();
-			await answerQuestion(nextQuestion);
-			await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
-		}
+		// Filter out questions that have been answered
+        const unansweredQuestions = questionQueue.filter(q => !q.answered);
+
+        if (unansweredQuestions.length > 0) {
+            const nextQuestion = unansweredQuestions[0]; // Get the next unanswered question
+            await answerQuestion(nextQuestion);
+            await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+        }
 	} catch (error) {
 		console.event('PARSE_ERR', error);
 	}
