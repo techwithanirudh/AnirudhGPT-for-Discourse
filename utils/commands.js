@@ -8,6 +8,7 @@ import {
 	PREFIX,
 	MODEL,
 	CONTEXT_LENGTH,
+	COMMAND_PREFIXES,
 } from '../config';
 
 console.event = event;
@@ -24,7 +25,10 @@ const commands = {
 	help: { handler: handleHelp, staffOnly: false },
 	suspend: { handler: handleSuspend, staffOnly: true },
 	image: { handler: handleImage, staffOnly: false },
+	// Prompt aliases
 	prompt: { handler: handlePrompt, staffOnly: false },
+	prompts: { handler: handlePrompt, staffOnly: false },
+	p: { handler: handlePrompt, staffOnly: false },
 };
 
 // Define command functions
@@ -71,9 +75,7 @@ async function handleImage(question, CHANNEL_NAME, CHANNEL_ID) {
 
 // Function to check for commands
 async function checkForCommand(question, CHANNEL_NAME, CHANNEL_ID) {
-	const commandPrefixes = ['@', '/', '.']; // Define the prefixes for commands
-
-	for (const prefix of commandPrefixes) {
+	for (const prefix of COMMAND_PREFIXES) {
 		if (question.text.startsWith(prefix)) {
 			const command = question.text.slice(1).split(' ')[0]; // Extract the command name
 			const commandInfo = commands[command]; // Get the corresponding command info

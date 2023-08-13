@@ -58,7 +58,7 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 			);
 			const question = chatMessage.replace(PREFIX, '').trim();
 
-			if (question && !questionQueue.some((q) => q.text === question)) {
+			if (question && !questionQueue.some((q) => q.id === chatMessageObj.id)) {
 				console.event('NOTIF_QUEUE', JSON.stringify(questionQueue));
 				console.event('ADD_QUEUE', `Adding question to queue: ${question}`);
 
