@@ -60,7 +60,7 @@ async function handleSuspend(thinkingMsg, _question, CHANNEL_NAME, CHANNEL_ID) {
 	process.exit();
 }
 
-async function handleImage(question, CHANNEL_NAME, CHANNEL_ID) {
+async function handleImage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	const response = await openai.createImage({
 		prompt: question,
 		n: 1,
@@ -69,27 +69,28 @@ async function handleImage(question, CHANNEL_NAME, CHANNEL_ID) {
 	const image_url = response.data.data[0].url;
 
 	const markdown = `![${question}](${image_url})`;
-	await postMessage(markdown, CHANNEL_NAME, CHANNEL_ID);
+	await editMessage(thinkingMsg, markdown, CHANNEL_NAME, CHANNEL_ID);
 	console.event('ANSWERED', markdown);
 }
 
-var usernameForPrompt;
+var questionAuthor;
 // Function to check for commands
 async function checkForCommand(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	for (const prefix of COMMAND_PREFIXES) {
 		if (question.text.startsWith(prefix)) {
-			usernameForPrompt = question.author;
 			const command = question.text.slice(1).split(' ')[0]; // Extract the command name
 			const commandInfo = commands[command]; // Get the corresponding command info
 			const parsedQuestion = question.text.slice(1 + command.length + 1); // Extract the question
-
+			questionAuthor = question.author;
+			
 			if (commandInfo) {
 				if (commandInfo.staffOnly && !(await isUserStaff(question.author))) {
 					console.event(
 						'PERMISSION_ERR',
 						'User does not have permission to execute this command.'
 					);
-					await postMessage(
+					await editMessage(
+						thinkingMsg,
 						'[ERROR] User does not have permission to execute this command.',
 						CHANNEL_NAME,
 						CHANNEL_ID
@@ -101,7 +102,7 @@ async function checkForCommand(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) 
 				}
 			} else {
 				console.event('UNKNOWN_CMD', 'Unknown command.');
-				await postMessage('[ERROR] Unknown command.', CHANNEL_NAME, CHANNEL_ID);
+				await editMessage(thinkingMsg, '[ERROR] Unknown command.', CHANNEL_NAME, CHANNEL_ID);
 				return true;
 			}
 
@@ -132,7 +133,7 @@ async function handlePrompt(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 			},
 			{
 				role: 'user',
-				content: `${usernameForPrompt}: ${actualQuestion}`,
+				content: `${questionAuthor}: ${actualQuestion}`,
 			},
 		];
 		let completion = {
@@ -169,7 +170,8 @@ async function handlePrompt(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 
 		console.event('ANSWERED', completionText);
 	} else {
-		await postMessage(
+		await editMessage(
+			thinkingMsg,
 			`[ERROR] Format incomplete or unknown prompt.
 
 [HELP] /prompt <model> <question>
