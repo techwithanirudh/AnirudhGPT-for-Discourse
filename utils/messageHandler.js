@@ -9,6 +9,7 @@ import { event } from './logging';
 import { censor } from '../utils';
 
 console.event = event;
+var retryCount = 0;
 
 function getHeaders(method, CHANNEL_NAME, CHANNEL_ID) {
 	return {
@@ -34,11 +35,11 @@ function getHeaders(method, CHANNEL_NAME, CHANNEL_ID) {
 	};
 }
 
-async function postMessage(msg, CHANNEL_NAME, CHANNEL_ID) {
+async function postMessage(text, CHANNEL_NAME, CHANNEL_ID) {
 	const url = `${BASE_URL}/chat/${CHANNEL_ID}`;
 
-	const cleanedMessage = censor(msg);
-	const body = `message=${encodeURIComponent(cleanedMessage)}`;
+	const cleanedText = censor(text);
+	const body = `message=${encodeURIComponent(cleanedText)}`;
 	const headers = {
 		...getHeaders('POST', CHANNEL_NAME, CHANNEL_ID),
 	};
@@ -46,6 +47,51 @@ async function postMessage(msg, CHANNEL_NAME, CHANNEL_ID) {
 	try {
 		const response = await fetch(url, {
 			method: 'POST',
+			headers,
+			body,
+		});
+
+		return await response.json();
+	} catch (error) {
+		console.error('Error posting message:', error);
+	}
+}
+
+async function postMessageWithRetries(message, channelName, channelId) {
+	var response;
+	while (true) {
+		response = await postMessage(message, channelName, channelId);
+
+		if (!response.errors) {
+			break; // Message sent successfully without errors, exit loop
+		} else if (response.errors.includes('You posted an identical message too recently.')) {
+			retryCount++;
+			const spaces = Array(5).fill('\u2063').join('');
+			const retryMessage = `${message}${spaces}`;
+
+			await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+			message = retryMessage;
+		} else {
+			console.error('Error sending message:', response.errors);
+			break;
+		}
+	}
+
+	return response;
+}
+
+async function editMessage(thinkingMsg, text, CHANNEL_NAME, CHANNEL_ID) {
+	const url = `${BASE_URL}/chat/${CHANNEL_ID}/edit/${thinkingMsg.message_id}`;
+
+	const cleanedText = censor(text);
+	const body = `new_message=${encodeURIComponent(cleanedText)}`;
+	const headers = {
+		...getHeaders('PUT', CHANNEL_NAME, CHANNEL_ID),
+	};
+
+	try {
+		const response = await fetch(url, {
+			method: 'PUT',
 			headers,
 			body,
 		});
@@ -117,4 +163,4 @@ async function isUserStaff(username) {
 	}
 }
 
-export { getHeaders, postMessage, getMessages, includesPrefix, isUserStaff };
+export { getHeaders, postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix, isUserStaff };

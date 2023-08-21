@@ -17,4 +17,4 @@ We would also like to thank the following open source projects:
 
 ## License
 
-This project is licensed under the AGPL License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the AGPL v3.0 License - see the [LICENSE](LICENSE) file for details.

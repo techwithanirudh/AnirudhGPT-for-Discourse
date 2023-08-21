@@ -1,6 +1,6 @@
 import express from 'express';
 import { Configuration, OpenAIApi } from 'openai';
-import { postMessage, getMessages, includesPrefix } from './utils';
+import { postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix } from './utils';
 import { saveOldMessagesToFile, loadOldMessagesFromFile } from './utils';
 import { addToQueue, questionQueue } from './utils';
 import {
@@ -84,7 +84,12 @@ async function answerQuestion(question) {
 	);
 	let { CHANNEL_NAME, CHANNEL_ID } = question;
 
-	const isCommand = await checkForCommand(question, CHANNEL_NAME, CHANNEL_ID);
+	const BOT_NAME = PREFIX.replace('@', '');
+	const THINKING_MSG = `${BOT_NAME} is thinking`;
+
+	const message = await postMessageWithRetries(THINKING_MSG, CHANNEL_NAME, CHANNEL_ID);
+	
+	const isCommand = await checkForCommand(message, question, CHANNEL_NAME, CHANNEL_ID);
 	console.event('CHECK_CMD', isCommand);
 	if (isCommand) return;
 
@@ -135,7 +140,7 @@ async function answerQuestion(question) {
 		.replace(pingRegex, '`[BOT PING]`')
 		.replace(usernameRegex, '');
 
-	await postMessage(filteredText, CHANNEL_NAME, CHANNEL_ID);
+	await editMessage(message, filteredText, CHANNEL_NAME, CHANNEL_ID);
 
 	console.event('ANSWERED', completionText);
 }

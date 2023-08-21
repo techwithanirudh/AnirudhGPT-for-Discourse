@@ -1,5 +1,5 @@
 import { event } from './logging';
-import { getMessages, isUserStaff, postMessage } from './messageHandler';
+import { editMessage, getMessages, isUserStaff, postMessage } from './messageHandler';
 import { Configuration, OpenAIApi } from 'openai';
 import {
 	OPENAI_API_KEY,
@@ -32,13 +32,13 @@ const commands = {
 };
 
 // Define command functions
-async function handleSay(question, CHANNEL_NAME, CHANNEL_ID) {
-	await postMessage(question, CHANNEL_NAME, CHANNEL_ID);
+async function handleSay(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
+	await editMessage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID);
 
 	console.event('ANSWERED', 'Said: ' + question);
 }
 
-async function handleHelp(_question, CHANNEL_NAME, CHANNEL_ID) {
+async function handleHelp(thinkingMsg, _question, CHANNEL_NAME, CHANNEL_ID) {
 	// Implement the help functionality
 	const helpMessage = `
   **Available commands:**
@@ -49,14 +49,14 @@ async function handleHelp(_question, CHANNEL_NAME, CHANNEL_ID) {
   \`/prompt <prompt> <message>\` - Talk to a different prompt (Pre-defined)
   `;
 
-	await postMessage(helpMessage, CHANNEL_NAME, CHANNEL_ID); // no, name before id.
+	await editMessage(thinkingMsg, helpMessage, CHANNEL_NAME, CHANNEL_ID); // no, name before id.
 
 	console.event('ANSWERED', helpMessage);
 }
 
-async function handleSuspend(_question, CHANNEL_NAME, CHANNEL_ID) {
+async function handleSuspend(thinkingMsg, _question, CHANNEL_NAME, CHANNEL_ID) {
 	console.event('KILLCMD', 'Killing process...');
-	await postMessage('[SUSPEND] Killing process...', CHANNEL_NAME, CHANNEL_ID);
+	await editMessage(thinkingMsg, '[SUSPEND] Killing process...', CHANNEL_NAME, CHANNEL_ID);
 	process.exit();
 }
 
@@ -73,10 +73,12 @@ async function handleImage(question, CHANNEL_NAME, CHANNEL_ID) {
 	console.event('ANSWERED', markdown);
 }
 
+var usernameForPrompt;
 // Function to check for commands
-async function checkForCommand(question, CHANNEL_NAME, CHANNEL_ID) {
+async function checkForCommand(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	for (const prefix of COMMAND_PREFIXES) {
 		if (question.text.startsWith(prefix)) {
+			usernameForPrompt = question.author;
 			const command = question.text.slice(1).split(' ')[0]; // Extract the command name
 			const commandInfo = commands[command]; // Get the corresponding command info
 			const parsedQuestion = question.text.slice(1 + command.length + 1); // Extract the question
@@ -94,7 +96,7 @@ async function checkForCommand(question, CHANNEL_NAME, CHANNEL_ID) {
 					);
 					return true;
 				} else {
-					await commandInfo.handler(parsedQuestion, CHANNEL_NAME, CHANNEL_ID);
+					await commandInfo.handler(thinkingMsg, parsedQuestion, CHANNEL_NAME, CHANNEL_ID);
 					return true;
 				}
 			} else {
@@ -110,7 +112,7 @@ async function checkForCommand(question, CHANNEL_NAME, CHANNEL_ID) {
 	return false;
 }
 
-async function handlePrompt(question, CHANNEL_NAME, CHANNEL_ID) {
+async function handlePrompt(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	const prompt = question.split(' ')[0];
 	const actualQuestion = question.split(' ').slice(1).join(' ');
 
@@ -130,7 +132,7 @@ async function handlePrompt(question, CHANNEL_NAME, CHANNEL_ID) {
 			},
 			{
 				role: 'user',
-				content: `${question.author}: ${actualQuestion}`,
+				content: `${usernameForPrompt}: ${actualQuestion}`,
 			},
 		];
 		let completion = {
@@ -163,7 +165,7 @@ async function handlePrompt(question, CHANNEL_NAME, CHANNEL_ID) {
 			.replace(pingRegex, '`[BOT PING]`')
 			.replace(usernameRegex, '');
 
-		await postMessage(filteredText, CHANNEL_NAME, CHANNEL_ID);
+		await editMessage(thinkingMsg, filteredText, CHANNEL_NAME, CHANNEL_ID);
 
 		console.event('ANSWERED', completionText);
 	} else {
