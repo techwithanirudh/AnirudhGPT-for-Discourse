@@ -1,5 +1,6 @@
 import { event } from './logging';
-import { editMessage, getMessages, isUserStaff, postMessage } from './messageHandler';
+import { editMessage, getMessages, isUserStaff } from './messageHandler';
+import { saveOldMessages } from './messageStorage';
 import { Configuration, OpenAIApi } from 'openai';
 import {
 	OPENAI_API_KEY,
@@ -56,6 +57,14 @@ async function handleHelp(thinkingMsg, _question, CHANNEL_NAME, CHANNEL_ID) {
 }
 
 async function handleSuspend(thinkingMsg, _question, CHANNEL_NAME, CHANNEL_ID) {
+	console.event('KILLCMD', 'Saving oldMessages...');
+
+	// Load current messages from the channel
+	const currentMessages = await getMessages(CHANNEL_NAME, CHANNEL_ID);
+
+	// Save the current messages
+	await saveOldMessages(CHANNEL_ID, currentMessages);
+
 	console.event('KILLCMD', 'Killing process...');
 	await editMessage(thinkingMsg, '[SUSPEND] Killing process...', CHANNEL_NAME, CHANNEL_ID);
 	process.exit();
@@ -75,39 +84,39 @@ async function handleImage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 }
 
 async function handleListMessages(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
-    const args = question.split(' ');
+	const args = question.split(' ');
 
-    const limit = args[1] || 35; // Default to 35 if not provided
-    const user = args[0] || null; // Default to null if not provided
+	const limit = args[1] || 35; // Default to 35 if not provided
+	const user = args[0] || null; // Default to null if not provided
 
-    // Fetch messages from the database
-    const messages = await getMessages(CHANNEL_NAME, CHANNEL_ID);
-    let filteredMessages = messages;
+	// Fetch messages from the database
+	const messages = await getMessages(CHANNEL_NAME, CHANNEL_ID);
+	let filteredMessages = messages;
 
-    // If a user is provided, filter messages by that user
-    if (user) {
-        filteredMessages = messages.filter(msg => msg.author === user);
-    }
-	
-    // Limit the number of messages
-    filteredMessages = filteredMessages.slice(0, limit);
+	// If a user is provided, filter messages by that user
+	if (user) {
+		filteredMessages = messages.filter(msg => msg.author === user);
+	}
 
-    // Handle bot pings
-    const pingRegex = new RegExp(PREFIX, 'ig');
+	// Limit the number of messages
+	filteredMessages = filteredMessages.slice(0, limit);
 
-    // Handle messages prefixed with a username
-    const usernameRegex = /^@?[a-z0-9]{3,21}: /i;
+	// Handle bot pings
+	const pingRegex = new RegExp(PREFIX, 'ig');
 
-    // Format the messages for display
-    const formattedMessages = filteredMessages.map(msg => {
-        let messageText = msg.text
-            .replace(pingRegex, '`[BOT PING]`')
-            .replace(usernameRegex, '');
-        return `${msg.author}: ${messageText}`;
-    }).join('\n');
+	// Handle messages prefixed with a username
+	const usernameRegex = /^@?[a-z0-9]{3,21}: /i;
 
-    await editMessage(thinkingMsg, formattedMessages, CHANNEL_NAME, CHANNEL_ID);
-    console.event('LISTED_MESSAGES', `Listed messages for ${user || 'all users'}`);
+	// Format the messages for display
+	const formattedMessages = filteredMessages.map(msg => {
+		let messageText = msg.text
+			.replace(pingRegex, '`[BOT PING]`')
+			.replace(usernameRegex, '');
+		return `${msg.author}: ${messageText}`;
+	}).join('\n');
+
+	await editMessage(thinkingMsg, formattedMessages, CHANNEL_NAME, CHANNEL_ID);
+	console.event('LISTED_MESSAGES', `Listed messages for ${user || 'all users'}`);
 }
 
 
@@ -120,7 +129,7 @@ async function checkForCommand(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) 
 			const commandInfo = commands[command]; // Get the corresponding command info
 			const parsedQuestion = question.text.slice(1 + command.length + 1); // Extract the question
 			questionAuthor = question.author;
-			
+
 			if (commandInfo) {
 				if (commandInfo.staffOnly && !(await isUserStaff(question.author))) {
 					console.event(
