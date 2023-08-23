@@ -29,6 +29,7 @@ const commands = {
 	prompt: { handler: handlePrompt, staffOnly: false },
 	prompts: { handler: handlePrompt, staffOnly: false },
 	p: { handler: handlePrompt, staffOnly: false },
+	list: { handler: handleListMessages, staffOnly: false }
 };
 
 // Define command functions
@@ -72,6 +73,43 @@ async function handleImage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	await editMessage(thinkingMsg, markdown, CHANNEL_NAME, CHANNEL_ID);
 	console.event('ANSWERED', markdown);
 }
+
+async function handleListMessages(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
+    const args = question.split(' ');
+
+    const limit = args[1] || 35; // Default to 35 if not provided
+    const user = args[0] || null; // Default to null if not provided
+
+    // Fetch messages from the database
+    const messages = await getMessages(CHANNEL_NAME, CHANNEL_ID);
+    let filteredMessages = messages;
+
+    // If a user is provided, filter messages by that user
+    if (user) {
+        filteredMessages = messages.filter(msg => msg.author === user);
+    }
+	
+    // Limit the number of messages
+    filteredMessages = filteredMessages.slice(0, limit);
+
+    // Handle bot pings
+    const pingRegex = new RegExp(PREFIX, 'ig');
+
+    // Handle messages prefixed with a username
+    const usernameRegex = /^@?[a-z0-9]{3,21}: /i;
+
+    // Format the messages for display
+    const formattedMessages = filteredMessages.map(msg => {
+        let messageText = msg.text
+            .replace(pingRegex, '`[BOT PING]`')
+            .replace(usernameRegex, '');
+        return `${msg.author}: ${messageText}`;
+    }).join('\n');
+
+    await editMessage(thinkingMsg, formattedMessages, CHANNEL_NAME, CHANNEL_ID);
+    console.event('LISTED_MESSAGES', `Listed messages for ${user || 'all users'}`);
+}
+
 
 var questionAuthor;
 // Function to check for commands
@@ -148,7 +186,7 @@ async function handlePrompt(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 		} catch (error) {
 			console.event('OPENAI_ERR', error);
 			const messageContent = error.response
-				? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.statusText}\n\`\`\``
+				? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.data.detail}\n\`\`\``
 				: `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
 
 			completion.data.choices[0].message.content = messageContent;

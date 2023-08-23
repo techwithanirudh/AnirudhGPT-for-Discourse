@@ -1,44 +1,51 @@
-import { writeFile, readFileSync } from 'fs';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 import { event } from './logging';
 
 console.event = event;
 
-// Function to save oldMessages to a JSON file for persistence
-function saveOldMessagesToFile(messages) {
-	writeFile('data/oldMessages.json', JSON.stringify(messages), (err) => {
-		if (err) {
-			console.event('MSG_SAVE_ERR', err);
-		}
-	});
+let db;
+
+async function initializeDatabase() {
+    db = await open({
+        filename: './data/messages.sqlite3',
+        driver: sqlite3.Database
+    });
 }
 
-// Function to load oldMessages from the JSON file
-function loadOldMessagesFromFile(CHANNEL_ID) {
-	try {
-		const data = readFileSync('data/oldMessages.json');
-		if (!data) {
-			console.event(
-				'MSG_LOAD_ERR',
-				'oldMessage.json has no content. Rewriting.'
-			);
-			saveOldMessagesToFile({});
-			return [];
-		}
-		let retdata = JSON.parse(data)[CHANNEL_ID];
-		return retdata ? retdata : [];
-	} catch (err) {
-		if (err.code === 'ENOENT') {
-			console.event(
-				'MSG_LOAD_ERR',
-				'oldMessages.json not found. Creating a new file.'
-			);
-			saveOldMessagesToFile({});
-			return [];
-		} else {
-			console.event('MSG_LOAD_ERR', err);
-			return [];
-		}
-	}
+async function ensureTableExists(CHANNEL_ID) {
+    await db.run(`CREATE TABLE IF NOT EXISTS channel_${CHANNEL_ID} (
+        id INTEGER PRIMARY KEY,
+        author TEXT,
+        text TEXT,
+        timestamp TEXT
+    )`);
 }
 
-export { saveOldMessagesToFile, loadOldMessagesFromFile };
+async function saveOldMessages(CHANNEL_ID, messages) {
+    try {
+        await ensureTableExists(CHANNEL_ID);
+        for (const message of messages) {
+            await db.run(`INSERT OR REPLACE INTO channel_${CHANNEL_ID} (id, author, text, timestamp) VALUES (?, ?, ?, ?)`, 
+                [message.id, message.author, message.text, message.timestamp]);
+        }
+    } catch (err) {
+        console.event('MSG_SAVE_ERR', err);
+    }
+}
+
+async function loadOldMessages(CHANNEL_ID) {
+    try {
+        await ensureTableExists(CHANNEL_ID);
+        const rows = await db.all(`SELECT * FROM channel_${CHANNEL_ID}`);
+        return rows;
+    } catch (err) {
+        console.event('MSG_LOAD_ERR', err);
+        return [];
+    }
+}
+
+// Initialize the database when this module is imported
+initializeDatabase();
+
+export { saveOldMessages, loadOldMessages };

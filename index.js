@@ -1,7 +1,7 @@
 import express from 'express';
 import { Configuration, OpenAIApi } from 'openai';
-import { postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix } from './utils';
-import { saveOldMessagesToFile, loadOldMessagesFromFile } from './utils';
+import { postMessageWithRetries, editMessage, getMessages, includesPrefix } from './utils';
+import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
 import {
 	OPENAI_API_KEY,
@@ -84,11 +84,10 @@ async function answerQuestion(question) {
 	);
 	let { CHANNEL_NAME, CHANNEL_ID } = question;
 
-	const BOT_NAME = PREFIX.replace('@', '');
-	const THINKING_MSG = `${BOT_NAME} is thinking`;
+	const THINKING_MSG = `Hmm... :thinking:`;
 
 	const message = await postMessageWithRetries(THINKING_MSG, CHANNEL_NAME, CHANNEL_ID);
-	
+
 	const isCommand = await checkForCommand(message, question, CHANNEL_NAME, CHANNEL_ID);
 	console.event('CHECK_CMD', isCommand);
 	if (isCommand) return;
@@ -122,7 +121,7 @@ async function answerQuestion(question) {
 	} catch (error) {
 		console.event('OPENAI_ERR', error);
 		const messageContent = error.response
-			? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.statusText}\n\`\`\``
+			? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.data.detail}\n\`\`\``
 			: `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
 
 		completion.data.choices[0].message.content = messageContent;
@@ -150,20 +149,21 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 	try {
 		messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
 		if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
+			// console.log(oldMessages.slice(0, 5), messages[CHANNEL_ID].slice(0, 5))
 			processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 
-			saveOldMessagesToFile(messages);
+			saveOldMessages(CHANNEL_ID, messages[CHANNEL_ID]);
 			oldMessages = messages[CHANNEL_ID];
 		}
 
 		// Filter out questions that have been answered
-        const unansweredQuestions = questionQueue.filter(q => !q.answered);
+		const unansweredQuestions = questionQueue.filter(q => !q.answered);
 
-        if (unansweredQuestions.length > 0) {
-            const nextQuestion = unansweredQuestions[0]; // Get the next unanswered question
-            await answerQuestion(nextQuestion);
-            await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
-        }
+		if (unansweredQuestions.length > 0) {
+			const nextQuestion = unansweredQuestions[0]; // Get the next unanswered question
+			await answerQuestion(nextQuestion);
+			await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
+		}
 	} catch (error) {
 		console.event('PARSE_ERR', error);
 	}
@@ -171,19 +171,27 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 
 // Main route
 app.get('/', (req, res) => {
-	res.status(200).send('Pong');
+	res.status(200).send('AnirudhGPT is An AI Comment Bot, created by Anirudh Sriram.');
 });
 
 // Webhook route for receiving new messages
-app.post('/webhook', async (req, res) => {
+app.all('/webhook', async (req, res) => {
 	try {
+		var { chat_channel_slug, chat_channel_id } = { chat_channel_slug: '', chat_channel_id: '' };
+
+		if (req.method === 'GET') {
+			var { chat_channel_slug, chat_channel_id } = req.query;
+		} else if (req.method === 'POST') {
+			var { chat_channel_slug, chat_channel_id } = req.body.notification.data;
+		} else {
+			return res.sendStatus(405)
+		}
 		console.event('WEBHOOK', 'Webhook triggered');
 
-		const { chat_channel_slug, chat_channel_id } = req.body.notification.data;
 		var CHANNEL_NAME = chat_channel_slug;
 		var CHANNEL_ID = chat_channel_id && chat_channel_id.toString();
 		console.event('NOTIF_CHANNEL_ID', CHANNEL_ID);
-		let oldMessages = loadOldMessagesFromFile(CHANNEL_ID); // load
+		let oldMessages = await loadOldMessages(CHANNEL_ID); // load
 		messages[CHANNEL_ID] = messages[CHANNEL_ID] ? messages[CHANNEL_ID] : [];
 
 		await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
