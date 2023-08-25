@@ -1,7 +1,5 @@
 // config.js
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || '';
 const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
 const BASE_URL = 'https://amcforum.wiki';
 const CHANNEL_NAME = 'general';
@@ -14,7 +12,8 @@ const STAFF_LIST = [
 	'SnakeByte',
 ];
 const CONTEXT_LENGTH = 50;
-const MODEL = 'text-moderation-latest';
+const MODEL = 'TOXICITY';
+const MIN_SCORE = 0.9;
 const EVENT_CONF = {
 	SRV_START: 'blue',
 	WEBHOOK_ERR: 'red',
@@ -48,13 +47,12 @@ const EVENT_CONF = {
 };
 
 export {
-	OPENAI_API_KEY,
-	OPENAI_BASE_URL,
 	DISCOURSE_API_KEY,
 	BASE_URL,
 	CHANNEL_NAME,
 	CHANNEL_ID,
 	PREFIX,
+	MIN_SCORE,
 	STAFF_LIST,
 	CONTEXT_LENGTH,
 	MODEL,

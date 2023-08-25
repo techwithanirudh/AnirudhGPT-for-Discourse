@@ -1,13 +1,9 @@
 import express from 'express';
-import { Configuration, OpenAIApi } from 'openai';
-import { postMessage, getMessages, includesPrefix, postMessageWithRetries } from './utils';
+import { postMessage, getMessages, includesPrefix, createModeration } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
-import { setTimeout } from 'node:timers/promises';
 import {
-	OPENAI_API_KEY,
-	OPENAI_BASE_URL,
-	PREFIX,
+	MIN_SCORE,
 	MODEL,
 } from './config';
 import { event } from './utils';
@@ -18,12 +14,6 @@ const app = express();
 const port = 3000; // Change to the desired port number
 
 app.use(express.json());
-
-const configuration = new Configuration({
-	apiKey: OPENAI_API_KEY,
-	basePath: OPENAI_BASE_URL,
-});
-const openai = new OpenAIApi(configuration);
 
 let messages = {};
 
@@ -82,39 +72,21 @@ async function answerQuestion(question) {
 	);
 	let { CHANNEL_NAME, CHANNEL_ID } = question;
 
-	const moderation = await openai.createModeration({
+	const moderation = await createModeration({
 		input: question.text,
 		model: MODEL
 	});
 
-	if (moderation.data.results[0]?.flagged) {
-		const categories = moderation.data.results[0]?.categories;
-
-		// Extract the categories that are flagged as true
-		const categoriesList = Object.entries(categories)
-			.filter(([key, value]) => value === true)
+	if (moderation.attributeScores?.TOXICITY?.summaryScore?.value >= MIN_SCORE) {
+		const flaggedCategories = Object.entries(moderation.attributeScores)
+			.filter(([key, attributeData]) => attributeData.summaryScore?.value >= MIN_SCORE)
 			.map(([key]) => key);
 
-		// Handle bot pings in the flagged message
-		const pingRegex = new RegExp(PREFIX, 'ig');
-		const handledPingsText = question.text.replace(pingRegex, '`[BOT PING]`');
+		const RESPONSE_MSG = `@${question.author}, your content was flagged for the following reasons: ${flaggedCategories.join(', ')}. Please adhere to community guidelines.`;
 
-		// Quote the flagged message and handle new lines
-		const quotedMessage = `> ${handledPingsText.replace(/\n/g, "\n> ")}`;
-
-		// Construct the response message
-		const RESPONSE_MSG = `
-${quotedMessage}
-
-@${question.author}, your content was flagged for the following reasons: ${categoriesList.join(', ')}.
-Please adhere to community guidelines.
-    `;
-
-		// Log relevant information
-		console.event('SCORES', JSON.stringify(moderation.data.results[0].category_scores));
+		console.event('SCORES', JSON.stringify(moderation.attributeScores));
 		console.event('ACTION_TAKEN', question.text);
 
-		// Post the filtered message
 		await postMessage(RESPONSE_MSG, CHANNEL_NAME, CHANNEL_ID);
 	}
 
