@@ -1,18 +1,16 @@
 import express from 'express';
 import { Configuration, OpenAIApi } from 'openai';
-import { postMessageWithRetries, editMessage, getMessages, includesPrefix } from './utils';
+import { postMessage, getMessages, includesPrefix, postMessageWithRetries } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
+import { setTimeout } from 'node:timers/promises';
 import {
 	OPENAI_API_KEY,
 	OPENAI_BASE_URL,
-	SYSTEM_PROMPT,
 	PREFIX,
-	CONTEXT_LENGTH,
 	MODEL,
 } from './config';
 import { event } from './utils';
-import checkForCommand from './utils/commands';
 
 console.event = event;
 
@@ -56,7 +54,7 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 				'NEWMSG',
 				`From: ${chatMessageObj.author}. Content: ${chatMessage}`
 			);
-			const question = chatMessage.replace(PREFIX, '').trim();
+			const question = chatMessage.trim();
 
 			if (question && !questionQueue.some((q) => q.id === chatMessageObj.id)) {
 				console.event('NOTIF_QUEUE', JSON.stringify(questionQueue));
@@ -79,69 +77,48 @@ async function answerQuestion(question) {
 	question.answered = true;
 
 	console.event(
-		'PROCESS',
-		`CHANNEL: ${question.CHANNEL_NAME}. Answering: ${question.text}`
+		'PROCESSING',
+		`CHANNEL: ${question.CHANNEL_NAME}. Message: ${question.text}`
 	);
 	let { CHANNEL_NAME, CHANNEL_ID } = question;
 
-	const THINKING_MSG = `Hmm... :thinking:`;
+	const moderation = await openai.createModeration({
+		input: question.text,
+		model: MODEL
+	});
 
-	const message = await postMessageWithRetries(THINKING_MSG, CHANNEL_NAME, CHANNEL_ID);
+	if (moderation.data.results[0]?.flagged) {
+		const categories = moderation.data.results[0]?.categories;
 
-	const isCommand = await checkForCommand(message, question, CHANNEL_NAME, CHANNEL_ID);
-	console.event('CHECK_CMD', isCommand);
-	if (isCommand) return;
+		// Extract the categories that are flagged as true
+		const categoriesList = Object.entries(categories)
+			.filter(([key, value]) => value === true)
+			.map(([key]) => key);
 
-	const contextMemory = messages[CHANNEL_ID].slice(-CONTEXT_LENGTH);
-	contextMemory.pop();
+		// Handle bot pings in the flagged message
+		const pingRegex = new RegExp(PREFIX, 'ig');
+		const handledPingsText = question.text.replace(pingRegex, '`[BOT PING]`');
 
-	const openAIMessages = [
-		...contextMemory.map((msg) => ({
-			role: 'user',
-			content: `${msg.author}: ${msg.text}`,
-		})),
-		{
-			role: 'system',
-			content: SYSTEM_PROMPT,
-		},
-		{
-			role: 'user',
-			content: `${question.author}: ${question.text}`,
-		},
-	];
-	let completion = {
-		data: { choices: [{ message: { content: 'Unknown Error' } }] },
-	};
+		// Quote the flagged message and handle new lines
+		const quotedMessage = `> ${handledPingsText.replace(/\n/g, "\n> ")}`;
 
-	try {
-		completion = await openai.createChatCompletion({
-			model: MODEL,
-			messages: openAIMessages,
-		});
-	} catch (error) {
-		console.event('OPENAI_ERR', error);
-		const messageContent = error.response
-			? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.data.detail}\n\`\`\``
-			: `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
+		// Construct the response message
+		const RESPONSE_MSG = `
+${quotedMessage}
 
-		completion.data.choices[0].message.content = messageContent;
+@${question.author}, your content was flagged for the following reasons: ${categoriesList.join(', ')}.
+Please adhere to community guidelines.
+    `;
+
+		// Log relevant information
+		console.event('SCORES', JSON.stringify(moderation.data.results[0].category_scores));
+		console.event('ACTION_TAKEN', question.text);
+
+		// Post the filtered message
+		await postMessage(RESPONSE_MSG, CHANNEL_NAME, CHANNEL_ID);
 	}
 
-	const completionText = completion.data.choices[0].message.content;
-
-	// Handle bot pings
-	const pingRegex = new RegExp(PREFIX, 'ig');
-
-	// Handle messages prefixed with a username
-	const usernameRegex = /^@?[a-z0-9]{3,21}: /i;
-
-	const filteredText = completionText
-		.replace(pingRegex, '`[BOT PING]`')
-		.replace(usernameRegex, '');
-
-	await editMessage(message, filteredText, CHANNEL_NAME, CHANNEL_ID);
-
-	console.event('ANSWERED', completionText);
+	console.event('PROCESSED', question.text);
 }
 
 async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
@@ -149,7 +126,6 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 	try {
 		messages[CHANNEL_ID] = await getMessages(CHANNEL_NAME, CHANNEL_ID);
 		if (JSON.stringify(messages[CHANNEL_ID]) !== JSON.stringify(oldMessages)) {
-			// console.log(oldMessages.slice(0, 5), messages[CHANNEL_ID].slice(0, 5))
 			processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 
 			saveOldMessages(CHANNEL_ID, messages[CHANNEL_ID]);
@@ -171,7 +147,7 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 
 // Main route
 app.get('/', (req, res) => {
-	res.status(200).send('AnirudhGPT is An AI Comment Bot, created by Anirudh Sriram.');
+	res.status(200).send('AutoMod is An AI Comment Bot, created by Anirudh Sriram.');
 });
 
 // Webhook route for receiving new messages
@@ -202,6 +178,11 @@ app.all('/webhook', async (req, res) => {
 		res.status(500).send('[WEBHOOK_ERR] Error processing message.');
 	}
 });
+
+setInterval(async () => {
+	await fetch('https://automod-for-discourse.techwithanirudh.repl.co/webhook?chat_channel_slug=general&chat_channel_id=2')
+	await fetch('https://automod-for-discourse.techwithanirudh.repl.co/webhook?chat_channel_slug=anirudhgpt&chat_channel_id=154')
+}, 35000)
 
 // Start the Express server
 app.listen(port, () => {

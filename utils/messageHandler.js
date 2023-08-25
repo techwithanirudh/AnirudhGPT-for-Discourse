@@ -1,7 +1,6 @@
 import {
 	BASE_URL,
 	DISCOURSE_API_KEY,
-	PREFIX,
 	STAFF_LIST,
 	CONTEXT_LENGTH,
 } from '../config';
@@ -136,7 +135,7 @@ async function getMessages(CHANNEL_NAME, CHANNEL_ID) {
 }
 
 function includesPrefix(message) {
-	return message.includes(PREFIX);
+	return true;
 }
 
 // Function to check if a user is staff using the Discourse API and with exceptions array
