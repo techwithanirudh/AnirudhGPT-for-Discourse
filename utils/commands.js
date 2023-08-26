@@ -198,10 +198,10 @@ async function handlePrompt(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 				? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.data.detail}\n\`\`\``
 				: `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
 
-			completion.data.choices[0].message.content = messageContent;
+			completion.choices[0].message.content = messageContent;
 		}
 
-		const completionText = completion.data.choices[0].message.content;
+		const completionText = completion.choices[0].message.content;
 
 		// Handle bot pings
 		const pingRegex = new RegExp(PREFIX, 'ig');

@@ -109,7 +109,7 @@ async function answerQuestion(question) {
 		},
 	];
 	let completion = {
-		data: { choices: [{ message: { content: 'Unknown Error' } }] },
+		choices: [{ message: { content: 'Unknown Error' } }],
 	};
 
 	try {
@@ -123,10 +123,10 @@ async function answerQuestion(question) {
 			? `An error occurred:\n\`\`\`markdown\n${error.response.status}: ${error.response.data.detail}\n\`\`\``
 			: `An error occurred:\n\`\`\`markdown\n${error}\n\`\`\``;
 
-		completion.data.choices[0].message.content = messageContent;
+		completion.choices[0].message.content = messageContent;
 	}
 
-	const completionText = completion.data.choices[0].message.content;
+	const completionText = completion.choices[0].message.content;
 
 	// Handle bot pings
 	const pingRegex = new RegExp(PREFIX, 'ig');
