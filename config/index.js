@@ -14,13 +14,14 @@ const STAFF_LIST = [
 const CONTEXT_LENGTH = 50;
 const MAX_RETRIES = 50;
 const MODEL = 'TOXICITY';
-const MIN_SCORE = 0.8;
+const MIN_SCORE = 0.6;
 const EVENT_CONF = {
 	SRV_START: 'blue',
 	WEBHOOK_ERR: 'red',
 	PARSE_ERR: 'red',
 	WEBHOOK: 'blue',
 	PROCESSING: 'blue',
+	RETRY_AFTER: 'blue',
 	PROCESSED: 'yellow',
 	NEWMSG: 'magenta',
 	ADD_QUEUE: 'yellow',

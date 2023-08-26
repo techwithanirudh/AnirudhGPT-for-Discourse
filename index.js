@@ -1,5 +1,5 @@
 import express from 'express';
-import { postMessage, getMessages, includesPrefix, createModeration } from './utils';
+import { postMessageWithRetries, getMessages, includesPrefix, createModeration } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
 import {
@@ -87,7 +87,8 @@ async function answerQuestion(question) {
 		console.event('SCORES', JSON.stringify(moderation.attributeScores));
 		console.event('ACTION_TAKEN', question.text);
 
-		await postMessage(RESPONSE_MSG, CHANNEL_NAME, CHANNEL_ID);
+		console.log(RESPONSE_MSG)
+		await postMessageWithRetries(RESPONSE_MSG, CHANNEL_NAME, CHANNEL_ID);
 	}
 
 	console.event('PROCESSED', question.text);
