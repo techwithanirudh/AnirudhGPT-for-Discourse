@@ -7,9 +7,30 @@ import {
 } from '../config';
 import { event } from './logging';
 import { censor } from '../utils';
+import fetchRetry from 'fetch-retry';
+
+const fetch = fetchRetry(global.fetch, {
+	retries: MAX_RETRIES,
+	retryDelay: retryDelayHandler,
+	retryOn: [503, 429, 500]
+});
 
 console.event = event;
 var retryCount = 0;
+
+function retryDelayHandler(attempt, error, response) {
+	// Default exponential backoff
+	let delay = Math.pow(2, attempt) * 1000;
+
+	if (response && response.headers.has('Retry-After')) {
+		const retryAfter = response.headers.get('Retry-After');
+		console.event('RETRY_AFTER', `${retryAfter}s`);
+
+		delay = parseInt(retryAfter, 10) * 1000;
+	}
+
+	return delay;
+}
 
 function getHeaders(method, CHANNEL_NAME, CHANNEL_ID) {
 	return {

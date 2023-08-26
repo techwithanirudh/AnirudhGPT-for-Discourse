@@ -166,6 +166,7 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 		}
 	} catch (error) {
 		console.event('PARSE_ERR', error);
+		return await checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID);
 	}
 }
 
