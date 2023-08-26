@@ -1,7 +1,7 @@
 import { event } from './logging';
 import { editMessage, getMessages, isUserStaff } from './messageHandler';
 import { saveOldMessages } from './messageStorage';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import {
 	OPENAI_API_KEY,
 	OPENAI_BASE_URL,
@@ -14,11 +14,11 @@ import {
 
 console.event = event;
 
-const configuration = new Configuration({
+
+const openai = new OpenAI({
 	apiKey: OPENAI_API_KEY,
-	basePath: OPENAI_BASE_URL,
+	baseURL: OPENAI_BASE_URL
 });
-const openai = new OpenAIApi(configuration);
 
 // Define command map
 const commands = {
@@ -71,7 +71,7 @@ async function handleSuspend(thinkingMsg, _question, CHANNEL_NAME, CHANNEL_ID) {
 }
 
 async function handleImage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
-	const response = await openai.createImage({
+	const response = await openai.images.generate({
 		prompt: question,
 		n: 1,
 		size: '1024x1024',
@@ -188,7 +188,7 @@ async function handlePrompt(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 		};
 
 		try {
-			completion = await openai.createChatCompletion({
+			completion = await openai.chat.completions.create({
 				model: MODEL,
 				messages: openAIMessages,
 			});

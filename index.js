@@ -1,5 +1,5 @@
 import express from 'express';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import { postMessageWithRetries, editMessage, getMessages, includesPrefix } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
@@ -21,11 +21,10 @@ const port = 3000; // Change to the desired port number
 
 app.use(express.json());
 
-const configuration = new Configuration({
+const openai = new OpenAI({
 	apiKey: OPENAI_API_KEY,
-	basePath: OPENAI_BASE_URL,
+	baseURL: OPENAI_BASE_URL
 });
-const openai = new OpenAIApi(configuration);
 
 let messages = {};
 
@@ -114,7 +113,7 @@ async function answerQuestion(question) {
 	};
 
 	try {
-		completion = await openai.createChatCompletion({
+		completion = await openai.chat.completions.create({
 			model: MODEL,
 			messages: openAIMessages,
 		});

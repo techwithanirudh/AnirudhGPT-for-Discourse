@@ -2,6 +2,7 @@ import {
 	BASE_URL,
 	DISCOURSE_API_KEY,
 	PREFIX,
+	MAX_RETRIES,
 	STAFF_LIST,
 	CONTEXT_LENGTH,
 } from '../config';
