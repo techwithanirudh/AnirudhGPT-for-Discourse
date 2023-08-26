@@ -13,7 +13,6 @@ const fetch = fetchRetry(global.fetch, {
 	retries: MAX_RETRIES,
 	retryDelay: retryDelayHandler,
 	retryOn: [503, 429, 500]
-
 });
 
 console.event = event;
