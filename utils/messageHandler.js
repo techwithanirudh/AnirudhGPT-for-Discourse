@@ -3,12 +3,54 @@ import {
 	DISCOURSE_API_KEY,
 	STAFF_LIST,
 	CONTEXT_LENGTH,
+	MAX_RETRIES
 } from '../config';
 import { event } from './logging';
 import { censor } from '../utils';
 
 console.event = event;
 var retryCount = 0;
+
+async function fetchWithRetry(...args) {
+    let retries = 0;
+    while (retries < MAX_RETRIES) {
+        try {
+            const response = await fetch(...args);
+            
+            // Check if the response is ok
+            if (!response.ok) {
+                const responseBody = await response.json();
+                
+                if (responseBody.errors && responseBody.errors[0].includes("You’ve performed this action too many times")) {
+                    retries++;
+                    
+                    // Extract wait time from the error message
+                    const waitTimeMatch = responseBody.errors[0].match(/wait (\d+) seconds/);
+                    const waitTime = waitTimeMatch ? parseInt(waitTimeMatch[1], 10) * 1000 : 5000; // Default to 5 seconds if no specific time is provided
+                    
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                } else {
+                    return response;
+                }
+            } else {
+                return response;
+            }
+        } catch (error) {
+            if (error.message.includes("You’ve performed this action too many times")) {
+                retries++;
+                
+                // Extract wait time from the error message
+                const waitTimeMatch = error.message.match(/wait (\d+) seconds/);
+                const waitTime = waitTimeMatch ? parseInt(waitTimeMatch[1], 10) * 1000 : 5000; // Default to 5 seconds if no specific time is provided
+                
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+            } else {
+                throw error;
+            }
+        }
+    }
+    throw new Error("Max retries reached");
+}
 
 function getHeaders(method, CHANNEL_NAME, CHANNEL_ID) {
 	return {
@@ -44,7 +86,7 @@ async function postMessage(text, CHANNEL_NAME, CHANNEL_ID) {
 	};
 
 	try {
-		const response = await fetch(url, {
+		const response = await fetchWithRetry(url, {
 			method: 'POST',
 			headers,
 			body,
@@ -89,7 +131,7 @@ async function editMessage(thinkingMsg, text, CHANNEL_NAME, CHANNEL_ID) {
 	};
 
 	try {
-		const response = await fetch(url, {
+		const response = await fetchWithRetry(url, {
 			method: 'PUT',
 			headers,
 			body,
@@ -108,7 +150,7 @@ async function getMessages(CHANNEL_NAME, CHANNEL_ID) {
 	};
 
 	try {
-		const response = await fetch(url, {
+		const response = await fetchWithRetry(url, {
 			method: 'GET',
 			headers,
 		});
@@ -149,7 +191,7 @@ async function isUserStaff(username) {
 	if (STAFF_LIST.includes(username)) return true;
 
 	try {
-		const response = await fetch(url, {
+		const response = await fetchWithRetry(url, {
 			method: 'GET',
 			headers,
 		});

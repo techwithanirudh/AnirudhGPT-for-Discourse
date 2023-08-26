@@ -11,7 +11,8 @@ const STAFF_LIST = [
 	'OmegaOrbitals',
 	'SnakeByte',
 ];
-const CONTEXT_LENGTH = 15;
+const CONTEXT_LENGTH = 50;
+const MAX_RETRIES = 50;
 const MODEL = 'TOXICITY';
 const MIN_SCORE = 0.8;
 const EVENT_CONF = {
@@ -55,6 +56,7 @@ export {
 	MIN_SCORE,
 	STAFF_LIST,
 	CONTEXT_LENGTH,
+	MAX_RETRIES,
 	MODEL,
 	EVENT_CONF
 };
