@@ -1,6 +1,7 @@
 import express from 'express';
 import { postMessageWithRetries, getMessages, includesPrefix, createModeration } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
+import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import { addToQueue, questionQueue } from './utils';
 import {
 	MIN_SCORE,
@@ -11,6 +12,7 @@ import { event } from './utils';
 console.event = event;
 
 const app = express();
+const pastebin = new PasteClient(process.env.PASTEBIN_API_KEY);
 const port = 3000; // Change to the desired port number
 
 app.use(express.json());
@@ -82,7 +84,18 @@ async function answerQuestion(question) {
 			.filter(([key, attributeData]) => attributeData.summaryScore?.value >= MIN_SCORE)
 			.map(([key]) => key);
 
-		const RESPONSE_MSG = `@${question.author}, your content was flagged for the following reasons: ${flaggedCategories.join(', ')}. Please adhere to community guidelines.`;
+		const url = await pastebin.createPaste({
+			code: question.text,
+			expireDate: ExpireDate.Never,
+			format: "javascript",
+			name: "Flagged Content",
+			publicity: Publicity.Unlisted,
+		});
+
+		const RESPONSE_MSG = `@${question.author}, your content was flagged for the following reasons: ${flaggedCategories.join(', ')}. Please adhere to community guidelines.
+
+[Please click on this link to view the flagged message](${url})
+ 	`;
 
 		console.event('SCORES', JSON.stringify(moderation.attributeScores));
 		console.event('ACTION_TAKEN', question.text);
@@ -155,7 +168,7 @@ app.all('/webhook', async (req, res) => {
 setInterval(async () => {
 	await fetch('https://automod-for-discourse.techwithanirudh.repl.co/webhook?chat_channel_slug=general&chat_channel_id=2')
 	await fetch('https://automod-for-discourse.techwithanirudh.repl.co/webhook?chat_channel_slug=anirudhgpt&chat_channel_id=154')
-}, 35000)
+}, 15000)
 
 // Start the Express server
 app.listen(port, () => {
