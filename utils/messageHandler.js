@@ -17,7 +17,6 @@ const fetch = fetchRetry(global.fetch, {
 });
 
 console.event = event;
-var retryCount = 0;
 
 function retryDelayHandler(attempt, error, response) {
 	// Default exponential backoff
@@ -87,7 +86,6 @@ async function postMessageWithRetries(message, channelName, channelId) {
 		if (!response.errors) {
 			break; // Message sent successfully without errors, exit loop
 		} else if (response.errors.includes('You posted an identical message too recently.')) {
-			retryCount++;
 			const spaces = Array(5).fill('\u2063').join('');
 			const retryMessage = `${message}${spaces}`;
 
