@@ -185,6 +185,9 @@ app.all('/webhook', async (req, res) => {
 		} else {
 			return res.sendStatus(405)
 		}
+
+		if (chat_channel_slug === '' && chat_channel_id === '') return res.sendStatus(400)
+		
 		console.event('WEBHOOK', 'Webhook triggered');
 
 		var CHANNEL_NAME = chat_channel_slug;

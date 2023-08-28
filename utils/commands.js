@@ -30,13 +30,22 @@ const commands = {
 	prompt: { handler: handlePrompt, staffOnly: false },
 	prompts: { handler: handlePrompt, staffOnly: false },
 	p: { handler: handlePrompt, staffOnly: false },
-	list: { handler: handleListMessages, staffOnly: false }
+	list: { handler: handleListMessages, staffOnly: false },
+	// Revive Chat
+	reviveChat: { handler: handleReviveChat, staffOnly: false },
+	rc: { handler: handleReviveChat, staffOnly: false },
 };
 
 // Define command functions
 async function handleSay(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	await editMessage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID);
 
+	console.event('ANSWERED', 'Said: ' + question);
+}
+
+async function handleReviveChat(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
+	question = 'Chat revived';
+	await editMessage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID);
 	console.event('ANSWERED', 'Said: ' + question);
 }
 
