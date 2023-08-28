@@ -5,6 +5,7 @@ const BASE_URL = 'https://amcforum.wiki';
 const CHANNEL_NAME = 'general';
 const CHANNEL_ID = 2;
 const PREFIX = '@anirudhgpt';
+const BOT_NAME = 'anirudhgpt';
 const STAFF_LIST = [
 	'techwithanirudh',
 	'python660',
@@ -54,6 +55,7 @@ export {
 	CHANNEL_NAME,
 	CHANNEL_ID,
 	PREFIX,
+	BOT_NAME,
 	MIN_SCORE,
 	STAFF_LIST,
 	CONTEXT_LENGTH,

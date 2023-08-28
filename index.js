@@ -1,18 +1,17 @@
 import express from 'express';
 import { postMessageWithRetries, getMessages, includesPrefix, createModeration } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
-import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import { addToQueue, questionQueue } from './utils';
 import {
 	MIN_SCORE,
 	MODEL,
+	BOT_NAME
 } from './config';
 import { event } from './utils';
 
 console.event = event;
 
 const app = express();
-const pastebin = new PasteClient(process.env.PASTEBIN_API_KEY);
 const port = 3000; // Change to the desired port number
 
 app.use(express.json());
@@ -67,6 +66,7 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 
 async function answerQuestion(question) {
 	question.answered = true;
+	if (question.author === BOT_NAME) return;
 
 	console.event(
 		'PROCESSING',
@@ -84,18 +84,11 @@ async function answerQuestion(question) {
 			.filter(([key, attributeData]) => attributeData.summaryScore?.value >= MIN_SCORE)
 			.map(([key]) => key);
 
-		const url = await pastebin.createPaste({
-			code: question.text,
-			expireDate: ExpireDate.Never,
-			format: "javascript",
-			name: "Flagged Content",
-			publicity: Publicity.Unlisted,
-		});
+		const RESPONSE_MSG = `
+@${question.author}, Your message was flagged for the following reasons: ${flaggedCategories.join(', ')}. Please adhere to community guidelines.
 
-		const RESPONSE_MSG = `@${question.author}, your content was flagged for the following reasons: ${flaggedCategories.join(', ')}. Please adhere to community guidelines.
-
-[Please click on this link to view the flagged message](${url})
- 	`;
+[spoiler]\n\`\`\`msgquot\n${question.text.replace("`", "`⁣")}\n\`\`\`\n[/spoiler]
+`.trim();
 
 		console.event('SCORES', JSON.stringify(moderation.attributeScores));
 		console.event('ACTION_TAKEN', question.text);
@@ -148,6 +141,9 @@ app.all('/webhook', async (req, res) => {
 		} else {
 			return res.sendStatus(405)
 		}
+
+		if (chat_channel_slug === '' && chat_channel_id === '') return res.sendStatus(400)
+		
 		console.event('WEBHOOK', 'Webhook triggered');
 
 		var CHANNEL_NAME = chat_channel_slug;

@@ -102,8 +102,8 @@ async function postMessageWithRetries(message, channelName, channelId) {
 	return response;
 }
 
-async function editMessage(thinkingMsg, text, CHANNEL_NAME, CHANNEL_ID) {
-	const url = `${BASE_URL}/chat/${CHANNEL_ID}/edit/${thinkingMsg.message_id}`;
+async function editMessage(msg, text, CHANNEL_NAME, CHANNEL_ID) {
+	const url = `${BASE_URL}/chat/${CHANNEL_ID}/edit/${msg.id || msg.message_id}`;
 
 	const cleanedText = censor(text);
 	const body = `new_message=${encodeURIComponent(cleanedText)}`;
@@ -185,4 +185,4 @@ async function isUserStaff(username) {
 	}
 }
 
-export { getHeaders, postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix, isUserStaff };
+export { getHeaders, postMessage, postMessageWithRetries,  editMessage, getMessages, includesPrefix, isUserStaff };
