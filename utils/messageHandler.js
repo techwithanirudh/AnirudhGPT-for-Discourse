@@ -229,4 +229,25 @@ async function getChatChannel(username) {
 	}
 }
 
-export { getHeaders, postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix, isUserStaff, getUserInfo, getChatChannel };
+async function reactToMessage(msg, reaction, CHANNEL_NAME, CHANNEL_ID) {
+	const url = `${BASE_URL}/chat/${CHANNEL_ID}/react/${msg.id || msg.message_id}`;
+
+	const body = `react_action=add&emoji=${encodeURIComponent(reaction)}`;
+	const headers = {
+		...getHeaders('PUT', CHANNEL_NAME, CHANNEL_ID),
+	};
+
+	try {
+		const response = await fetch(url, {
+			method: 'PUT',
+			headers,
+			body,
+		});
+
+		return await response.json();
+	} catch (error) {
+		console.error('Error posting message:', error);
+	}
+}
+
+export { getHeaders, postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix, isUserStaff, getUserInfo, getChatChannel, reactToMessage };
