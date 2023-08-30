@@ -16,8 +16,8 @@ const STAFF_LIST = [
 	'SnakeByte',
 ];
 const CONTEXT_LENGTH = 50;
-const MAX_RETRIES = 50;
 const MODEL = 'TOXICITY';
+const MAX_RETRIES = 50;
 const MIN_SCORE = 0.9;
 const EVENT_CONF = {
 	SRV_START: 'blue',
