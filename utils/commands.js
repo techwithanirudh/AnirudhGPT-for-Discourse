@@ -44,7 +44,8 @@ async function handleSay(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 }
 
 async function handleReviveChat(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
-	question = 'Chat revived';
+	// TODO: Add features
+	question = '@all';
 	await editMessage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID);
 	console.event('ANSWERED', 'Said: ' + question);
 }

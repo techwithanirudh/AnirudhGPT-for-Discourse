@@ -3,6 +3,7 @@
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || '';
 const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const BASE_URL = 'https://amcforum.wiki';
 const CHANNEL_NAME = 'general';
 const CHANNEL_ID = 2;
@@ -34,6 +35,7 @@ const EVENT_CONF = {
 	PARSE_ERR: 'red',
 	WEBHOOK: 'blue',
 	ANSWERED: 'green',
+	RETRY_AFTER: 'blue',
 	ANSWERING: 'blue',
 	NEWMSG: 'magenta',
 	KILLCMD: 'red',

@@ -183,4 +183,50 @@ async function isUserStaff(username) {
 	}
 }
 
-export { getHeaders, postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix, isUserStaff };
+async function getUserInfo(username) {
+	const url = `${BASE_URL}/u/${username}/card.json`;
+	const headers = {
+		...getHeaders('GET'),
+	};
+	console.event('USER_INFO', `FETCHING: ${username}`);
+
+	try {
+		const response = await fetch(url, {
+			method: 'GET',
+			headers,
+		});
+
+		const data = await response.json();
+		return data.user;
+	} catch (error) {
+		console.event('USER_INFO_ERROR', error);
+		return false;
+	}
+}
+
+async function getChatChannel(username) {
+	const url = `${BASE_URL}/chat/api/direct-message-channels.json`;
+
+	const body = `target_usernames[]=${username}`;
+	const headers = {
+		...getHeaders('POST'),
+	};
+
+	try {
+		const response = await fetch(url, {
+			method: 'POST',
+			headers,
+			body,
+		});
+
+		const result = await response.json();
+		const id = result.channel.id;
+		const username = result.channel.chatable.users[0].username;
+
+		return { id, username }; 
+	} catch (error) {
+		console.error('Error posting message:', error);
+	}
+}
+
+export { getHeaders, postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix, isUserStaff, getUserInfo, getChatChannel };
