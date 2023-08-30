@@ -1,5 +1,5 @@
 import express from 'express';
-import { postMessageWithRetries, getMessages, includesPrefix, createModeration, sendEmail } from './utils';
+import { postMessageWithRetries, getMessages, includesPrefix, createModeration, sendEmail, getChatChannel } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
 import {
@@ -65,37 +65,63 @@ async function processNewMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 }
 
 async function answerQuestion(question) {
+	// Mark the question as answered
 	question.answered = true;
+
+	// If the author is the bot, exit the function
 	if (question.author === BOT_NAME) return;
 
-	console.event(
-		'PROCESSING',
-		`CHANNEL: ${question.CHANNEL_NAME}. Message: ${question.text}`
-	);
-	let { CHANNEL_NAME, CHANNEL_ID } = question;
+	// Log the processing event
+	console.event('PROCESSING', `CHANNEL: ${question.CHANNEL_NAME}. Message: ${question.text}`);
 
+	// Destructure relevant properties from the question
+	const { CHANNEL_NAME, CHANNEL_ID } = question;
+
+	// Get the moderation results for the question text
 	const moderation = await createModeration({
 		input: question.text,
 		model: MODEL
 	});
 
+	// Check if the message exceeds the toxicity threshold
 	if (moderation.attributeScores?.TOXICITY?.summaryScore?.value >= MIN_SCORE) {
 		const flaggedCategories = Object.entries(moderation.attributeScores)
-			.filter(([key, attributeData]) => attributeData.summaryScore?.value >= MIN_SCORE)
+			.filter(([_, attributeData]) => attributeData.summaryScore?.value >= MIN_SCORE)
 			.map(([key]) => key);
 
+		const CHNL_DATA = await getChatChannel(question.author);
+
 		const RESPONSE_MSG = `
-@${question.author}, Your message was flagged for the following reasons: ${flaggedCategories.join(', ')}. Please adhere to community guidelines.
+@${question.author}, 
+
+Your message was flagged for potential violations of our community guidelines. Please review our guidelines and ensure future messages adhere to them.
 
 [spoiler]\n\`\`\`msgquot\n${question.text.replace("`", "`⁣")}\n\`\`\`\n[/spoiler]
-`.trim();
+`;
 
-		await sendEmail(RESPONSE_MSG, 'Message Flagged');
-		
+		const EMAIL_SUBJECT = `Flagged Message Alert in ${CHANNEL_NAME}`;
+		const EMAIL_BODY = `
+Dear Staff,
+
+A message from ${question.author} in ${CHANNEL_NAME} has been flagged for potential violations of our community guidelines.
+
+Reasons for flagging: ${flaggedCategories.join(', ')}.
+
+Message content:
+"${question.text}"
+
+Please review the message and take appropriate action if necessary. We aim to maintain a positive and respectful environment in our community, and your assistance in this matter is greatly appreciated.
+
+Best regards,
+[Automated Moderation System]
+`;
+
+		await sendEmail(EMAIL_BODY, EMAIL_SUBJECT);
+
 		console.event('SCORES', JSON.stringify(moderation.attributeScores));
 		console.event('ACTION_TAKEN', question.text);
 
-		await postMessageWithRetries(RESPONSE_MSG, CHANNEL_NAME, CHANNEL_ID);
+		await postMessageWithRetries(RESPONSE_MSG, CHNL_DATA.username, CHNL_DATA.id);
 	}
 
 	console.event('PROCESSED', question.text);
@@ -144,7 +170,7 @@ app.all('/webhook', async (req, res) => {
 		}
 
 		if (chat_channel_slug === '' && chat_channel_id === '') return res.sendStatus(400)
-		
+
 		console.event('WEBHOOK', 'Webhook triggered');
 
 		var CHANNEL_NAME = chat_channel_slug;
