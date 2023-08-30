@@ -8,7 +8,7 @@ const CHANNEL_ID = 2;
 const PREFIX = '@anirudhgpt';
 const BOT_NAME = 'anirudhgpt';
 const FROM_EMAIL_ADDRESS = 'automod@techwithanirudh.com';
-const TO_EMAIL_ADDRESS = 'staff@amcforum.wiki';
+const TO_EMAIL_ADDRESS = 'techwithanirudh@protonmail.com';
 const STAFF_LIST = [
 	'techwithanirudh',
 	'python660',

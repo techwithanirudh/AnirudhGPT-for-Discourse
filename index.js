@@ -1,5 +1,5 @@
 import express from 'express';
-import { postMessageWithRetries, getMessages, includesPrefix, createModeration, sendEmail, getChatChannel } from './utils';
+import { postMessageWithRetries, getMessages, includesPrefix, createModeration, sendEmail, getChatChannel, reactToMessage } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
 import {
@@ -121,6 +121,7 @@ Best regards,
 		console.event('SCORES', JSON.stringify(moderation.attributeScores));
 		console.event('ACTION_TAKEN', question.text);
 
+		await reactToMessage(question, '-1', CHANNEL_NAME, CHANNEL_ID)
 		await postMessageWithRetries(RESPONSE_MSG, CHNL_DATA.username, CHNL_DATA.id);
 	}
 

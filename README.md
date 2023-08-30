@@ -25,7 +25,6 @@ Contributions are welcome! Please submit a pull request with your changes.
 - techwithanirudh
 - python660
 - Firepup650
-- 9pfs
 
 ## License
 
