@@ -1,5 +1,5 @@
 import express from 'express';
-import { postMessageWithRetries, getMessages, includesPrefix, createModeration } from './utils';
+import { postMessageWithRetries, getMessages, includesPrefix, createModeration, sendEmail } from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
 import {
@@ -90,10 +90,11 @@ async function answerQuestion(question) {
 [spoiler]\n\`\`\`msgquot\n${question.text.replace("`", "`⁣")}\n\`\`\`\n[/spoiler]
 `.trim();
 
+		await sendEmail(RESPONSE_MSG, 'Message Flagged');
+		
 		console.event('SCORES', JSON.stringify(moderation.attributeScores));
 		console.event('ACTION_TAKEN', question.text);
 
-		console.log(RESPONSE_MSG)
 		await postMessageWithRetries(RESPONSE_MSG, CHANNEL_NAME, CHANNEL_ID);
 	}
 
@@ -163,6 +164,7 @@ app.all('/webhook', async (req, res) => {
 
 setInterval(async () => {
 	await fetch('https://automod-for-discourse.techwithanirudh.repl.co/webhook?chat_channel_slug=general&chat_channel_id=2')
+	await fetch('https://automod-for-discourse.techwithanirudh.repl.co/webhook?chat_channel_slug=automod-testing&chat_channel_id=236')
 	await fetch('https://automod-for-discourse.techwithanirudh.repl.co/webhook?chat_channel_slug=anirudhgpt&chat_channel_id=154')
 }, 15000)
 

@@ -11,6 +11,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@sendgrid/mail": "^7.7.0",
 		"@types/node": "^20.4.9",
 		"axios": "^1.4.0",
 		"bad-words": "^3.0.4",

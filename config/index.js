@@ -1,11 +1,14 @@
 // config.js
 
 const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const BASE_URL = 'https://amcforum.wiki';
 const CHANNEL_NAME = 'general';
 const CHANNEL_ID = 2;
 const PREFIX = '@anirudhgpt';
 const BOT_NAME = 'anirudhgpt';
+const FROM_EMAIL_ADDRESS = 'automod@techwithanirudh.com';
+const TO_EMAIL_ADDRESS = 'staff@amcforum.wiki';
 const STAFF_LIST = [
 	'techwithanirudh',
 	'python660',
@@ -15,7 +18,7 @@ const STAFF_LIST = [
 const CONTEXT_LENGTH = 50;
 const MAX_RETRIES = 50;
 const MODEL = 'TOXICITY';
-const MIN_SCORE = 0.6;
+const MIN_SCORE = 0.9;
 const EVENT_CONF = {
 	SRV_START: 'blue',
 	WEBHOOK_ERR: 'red',
@@ -51,11 +54,14 @@ const EVENT_CONF = {
 
 export {
 	DISCOURSE_API_KEY,
+	SENDGRID_API_KEY,
 	BASE_URL,
 	CHANNEL_NAME,
 	CHANNEL_ID,
 	PREFIX,
 	BOT_NAME,
+	FROM_EMAIL_ADDRESS,
+	TO_EMAIL_ADDRESS,
 	MIN_SCORE,
 	STAFF_LIST,
 	CONTEXT_LENGTH,

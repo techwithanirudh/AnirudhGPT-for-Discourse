@@ -6,3 +6,4 @@ export * from './questionQueue';
 export * from './logging';
 export * from './unprofane';
 export * from './moderation';
+export * from './email';
