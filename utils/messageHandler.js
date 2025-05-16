@@ -63,7 +63,6 @@ async function postMessage(text, CHANNEL_NAME, CHANNEL_ID) {
 			headers,
 			body,
 		});
-
 		return await response.json();
 	} catch (error) {
 		console.error('Error posting message:', error);
@@ -95,10 +94,10 @@ async function postMessageWithRetries(message, channelName, channelId) {
 }
 
 async function editMessage(msg, text, CHANNEL_NAME, CHANNEL_ID) {
-	const url = `${BASE_URL}/chat/${CHANNEL_ID}/edit/${msg.id || msg.message_id}`;
+	const url = `${BASE_URL}/chat/api/channels/${CHANNEL_ID}/messages/${msg.id || msg.message_id}`;
 
 	const cleanedText = censor(text);
-	const body = `new_message=${encodeURIComponent(cleanedText)}`;
+	const body = `message=${encodeURIComponent(cleanedText)}`;
 	const headers = {
 		...getHeaders('PUT', CHANNEL_NAME, CHANNEL_ID),
 	};
@@ -112,7 +111,7 @@ async function editMessage(msg, text, CHANNEL_NAME, CHANNEL_ID) {
 
 		return await response.json();
 	} catch (error) {
-		console.error('Error posting message:', error);
+		console.error('Error editing message:', error);
 	}
 }
 
@@ -219,7 +218,7 @@ async function getChatChannel(username) {
 
 		return { id, username };
 	} catch (error) {
-		console.error('Error posting message:', error);
+		console.error('Error getting chat channel:', error);
 	}
 }
 
@@ -242,7 +241,7 @@ async function reactToMessage(msg, reaction, CHANNEL_NAME, CHANNEL_ID) {
 
 		return await response.json();
 	} catch (error) {
-		console.error('Error posting message:', error);
+		console.error('Error reacting to message:', error);
 	}
 }
 
