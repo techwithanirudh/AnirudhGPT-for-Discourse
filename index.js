@@ -1,6 +1,11 @@
 import express from 'express';
 import OpenAI from 'openai';
-import { postMessageWithRetries, editMessage, getMessages, includesPrefix } from './utils';
+import {
+	postMessageWithRetries,
+	editMessage,
+	getMessages,
+	includesPrefix,
+} from './utils';
 import { saveOldMessages, loadOldMessages } from './utils';
 import { addToQueue, questionQueue } from './utils';
 import {
@@ -23,7 +28,7 @@ app.use(express.json());
 
 const openai = new OpenAI({
 	apiKey: OPENAI_API_KEY,
-	baseURL: OPENAI_BASE_URL
+	baseURL: OPENAI_BASE_URL,
 });
 
 let messages = {};
@@ -85,9 +90,18 @@ async function answerQuestion(question) {
 
 	const THINKING_MSG = `Hmm... :thinking:`;
 
-	const message = await postMessageWithRetries(THINKING_MSG, CHANNEL_NAME, CHANNEL_ID);
+	const message = await postMessageWithRetries(
+		THINKING_MSG,
+		CHANNEL_NAME,
+		CHANNEL_ID
+	);
 
-	const isCommand = await checkForCommand(message, question, CHANNEL_NAME, CHANNEL_ID);
+	const isCommand = await checkForCommand(
+		message,
+		question,
+		CHANNEL_NAME,
+		CHANNEL_ID
+	);
 	console.event('CHECK_CMD', isCommand);
 	if (isCommand) return;
 
@@ -156,7 +170,7 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 		}
 
 		// Filter out questions that have been answered
-		const unansweredQuestions = questionQueue.filter(q => !q.answered);
+		const unansweredQuestions = questionQueue.filter((q) => !q.answered);
 
 		if (unansweredQuestions.length > 0) {
 			const nextQuestion = unansweredQuestions[0]; // Get the next unanswered question
@@ -170,24 +184,30 @@ async function checkForMessages(oldMessages, CHANNEL_NAME, CHANNEL_ID) {
 
 // Main route
 app.get('/', (req, res) => {
-	res.status(200).send('AnirudhGPT is An AI Comment Bot, created by Anirudh Sriram.');
+	res
+		.status(200)
+		.send('AnirudhGPT is An AI Comment Bot, created by Anirudh Sriram.');
 });
 
 // Webhook route for receiving new messages
 app.all('/webhook', async (req, res) => {
 	try {
-		var { chat_channel_slug, chat_channel_id } = { chat_channel_slug: '', chat_channel_id: '' };
+		var { chat_channel_slug, chat_channel_id } = {
+			chat_channel_slug: '',
+			chat_channel_id: '',
+		};
 
 		if (req.method === 'GET') {
 			var { chat_channel_slug, chat_channel_id } = req.query;
 		} else if (req.method === 'POST') {
 			var { chat_channel_slug, chat_channel_id } = req.body.notification.data;
 		} else {
-			return res.sendStatus(405)
+			return res.sendStatus(405);
 		}
 
-		if (chat_channel_slug === '' && chat_channel_id === '') return res.sendStatus(400)
-		
+		if (chat_channel_slug === '' && chat_channel_id === '')
+			return res.sendStatus(400);
+
 		console.event('WEBHOOK', 'Webhook triggered');
 
 		var CHANNEL_NAME = chat_channel_slug;

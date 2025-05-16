@@ -14,10 +14,9 @@ import {
 
 console.event = event;
 
-
 const openai = new OpenAI({
 	apiKey: OPENAI_API_KEY,
-	baseURL: OPENAI_BASE_URL
+	baseURL: OPENAI_BASE_URL,
 });
 
 // Define command map
@@ -43,7 +42,12 @@ async function handleSay(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	console.event('ANSWERED', 'Said: ' + question);
 }
 
-async function handleReviveChat(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
+async function handleReviveChat(
+	thinkingMsg,
+	question,
+	CHANNEL_NAME,
+	CHANNEL_ID
+) {
 	// TODO: Add features
 	question = '@all';
 	await editMessage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID);
@@ -76,7 +80,12 @@ async function handleSuspend(thinkingMsg, _question, CHANNEL_NAME, CHANNEL_ID) {
 	await saveOldMessages(CHANNEL_ID, currentMessages);
 
 	console.event('KILLCMD', 'Killing process...');
-	await editMessage(thinkingMsg, '[SUSPEND] Killing process...', CHANNEL_NAME, CHANNEL_ID);
+	await editMessage(
+		thinkingMsg,
+		'[SUSPEND] Killing process...',
+		CHANNEL_NAME,
+		CHANNEL_ID
+	);
 	process.exit();
 }
 
@@ -93,7 +102,12 @@ async function handleImage(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
 	console.event('ANSWERED', markdown);
 }
 
-async function handleListMessages(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
+async function handleListMessages(
+	thinkingMsg,
+	question,
+	CHANNEL_NAME,
+	CHANNEL_ID
+) {
 	const args = question.split(' ');
 
 	const limit = args[1] || 35; // Default to 35 if not provided
@@ -105,7 +119,7 @@ async function handleListMessages(thinkingMsg, question, CHANNEL_NAME, CHANNEL_I
 
 	// If a user is provided, filter messages by that user
 	if (user) {
-		filteredMessages = messages.filter(msg => msg.author === user);
+		filteredMessages = messages.filter((msg) => msg.author === user);
 	}
 
 	// Limit the number of messages
@@ -118,21 +132,30 @@ async function handleListMessages(thinkingMsg, question, CHANNEL_NAME, CHANNEL_I
 	const usernameRegex = /^@?[a-z0-9]{3,21}: /i;
 
 	// Format the messages for display
-	const formattedMessages = filteredMessages.map(msg => {
-		let messageText = msg.text
-			.replace(pingRegex, '`[BOT PING]`')
-			.replace(usernameRegex, '');
-		return `${msg.author}: ${messageText}`;
-	}).join('\n');
+	const formattedMessages = filteredMessages
+		.map((msg) => {
+			let messageText = msg.text
+				.replace(pingRegex, '`[BOT PING]`')
+				.replace(usernameRegex, '');
+			return `${msg.author}: ${messageText}`;
+		})
+		.join('\n');
 
 	await editMessage(thinkingMsg, formattedMessages, CHANNEL_NAME, CHANNEL_ID);
-	console.event('LISTED_MESSAGES', `Listed messages for ${user || 'all users'}`);
+	console.event(
+		'LISTED_MESSAGES',
+		`Listed messages for ${user || 'all users'}`
+	);
 }
-
 
 var questionAuthor;
 // Function to check for commands
-async function checkForCommand(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) {
+async function checkForCommand(
+	thinkingMsg,
+	question,
+	CHANNEL_NAME,
+	CHANNEL_ID
+) {
 	for (const prefix of COMMAND_PREFIXES) {
 		if (question.text.startsWith(prefix)) {
 			const command = question.text.slice(1).split(' ')[0]; // Extract the command name
@@ -154,12 +177,22 @@ async function checkForCommand(thinkingMsg, question, CHANNEL_NAME, CHANNEL_ID) 
 					);
 					return true;
 				} else {
-					await commandInfo.handler(thinkingMsg, parsedQuestion, CHANNEL_NAME, CHANNEL_ID);
+					await commandInfo.handler(
+						thinkingMsg,
+						parsedQuestion,
+						CHANNEL_NAME,
+						CHANNEL_ID
+					);
 					return true;
 				}
 			} else {
 				console.event('UNKNOWN_CMD', 'Unknown command.');
-				await editMessage(thinkingMsg, '[ERROR] Unknown command.', CHANNEL_NAME, CHANNEL_ID);
+				await editMessage(
+					thinkingMsg,
+					'[ERROR] Unknown command.',
+					CHANNEL_NAME,
+					CHANNEL_ID
+				);
 				return true;
 			}
 

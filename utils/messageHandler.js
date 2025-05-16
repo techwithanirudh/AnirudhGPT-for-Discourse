@@ -13,7 +13,7 @@ import fetchRetry from 'fetch-retry';
 const fetch = fetchRetry(global.fetch, {
 	retries: MAX_RETRIES,
 	retryDelay: retryDelayHandler,
-	retryOn: [503, 429, 500]
+	retryOn: [503, 429, 500],
 });
 
 console.event = event;
@@ -85,11 +85,13 @@ async function postMessageWithRetries(message, channelName, channelId) {
 
 		if (!response.errors) {
 			break; // Message sent successfully without errors, exit loop
-		} else if (response.errors.includes('You posted an identical message too recently.')) {
+		} else if (
+			response.errors.includes('You posted an identical message too recently.')
+		) {
 			const spaces = Array(5).fill('\u2063').join('');
 			const retryMessage = `${message}${spaces}`;
 
-			await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+			await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
 			message = retryMessage;
 		} else {
 			console.error('Error sending message:', response.errors);
@@ -223,14 +225,16 @@ async function getChatChannel(username) {
 		const id = result.channel.id;
 		const username = result.channel.chatable.users[0].username;
 
-		return { id, username }; 
+		return { id, username };
 	} catch (error) {
 		console.error('Error posting message:', error);
 	}
 }
 
 async function reactToMessage(msg, reaction, CHANNEL_NAME, CHANNEL_ID) {
-	const url = `${BASE_URL}/chat/${CHANNEL_ID}/react/${msg.id || msg.message_id}`;
+	const url = `${BASE_URL}/chat/${CHANNEL_ID}/react/${
+		msg.id || msg.message_id
+	}`;
 
 	const body = `react_action=add&emoji=${encodeURIComponent(reaction)}`;
 	const headers = {
@@ -250,4 +254,15 @@ async function reactToMessage(msg, reaction, CHANNEL_NAME, CHANNEL_ID) {
 	}
 }
 
-export { getHeaders, postMessage, postMessageWithRetries, editMessage, getMessages, includesPrefix, isUserStaff, getUserInfo, getChatChannel, reactToMessage };
+export {
+	getHeaders,
+	postMessage,
+	postMessageWithRetries,
+	editMessage,
+	getMessages,
+	includesPrefix,
+	isUserStaff,
+	getUserInfo,
+	getChatChannel,
+	reactToMessage,
+};
