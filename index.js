@@ -197,6 +197,13 @@ app.all('/webhook', async (req, res) => {
 			chat_channel_id: '',
 		};
 
+			console.log(JSON.stringify(req.body))
+
+
+		if (req.body.ping) {
+			return res.sendStatus(200);
+		}
+
 		if (req.method === 'GET') {
 			var { chat_channel_slug, chat_channel_id } = req.query;
 		} else if (req.method === 'POST') {

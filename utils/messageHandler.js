@@ -42,17 +42,9 @@ function getHeaders(method, CHANNEL_NAME, CHANNEL_ID) {
 		'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
 		'discourse-logged-in': 'true',
 		'discourse-present': 'true',
-		'sec-ch-ua':
-			'"Not/A)Brand";v="99", "Microsoft Edge";v="115", "Chromium";v="115"',
-		'sec-ch-ua-mobile': '?0',
-		'sec-ch-ua-platform': '"Windows"',
-		'sec-fetch-dest': 'empty',
-		'sec-fetch-mode': 'cors',
-		'sec-fetch-site': 'same-origin',
 		Referer: `${BASE_URL}/chat/c/${CHANNEL_NAME}/${CHANNEL_ID}`,
-		'Referrer-Policy': 'strict-origin-when-cross-origin',
-		'x-requested-with': 'XMLHttpRequest',
 		'Api-Key': DISCOURSE_API_KEY,
+		// 'Api-Username': 'Mike',
 	};
 }
 

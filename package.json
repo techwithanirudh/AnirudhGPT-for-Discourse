@@ -1,29 +1,37 @@
 {
-	"name": "nodejs",
-	"version": "1.0.0",
-	"description": "",
-	"type": "module",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"@sendgrid/mail": "^7.7.0",
-		"@types/node": "^20.4.9",
-		"axios": "^1.4.0",
-		"bad-words": "^3.0.4",
-		"chalk": "^5.3.0",
-		"express": "^4.18.2",
-		"fetch-retry": "^5.0.6",
-		"node-fetch": "^3.2.6",
-		"openai": "^4.1.0",
-		"ora": "^7.0.1",
-		"prettier": "^3.0.1",
-		"sqlite": "^5.0.1",
-		"sqlite3": "^5.1.6",
-		"winston": "^3.10.0"
-	}
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "bun run index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
+    "@types/node": "^20.4.9",
+    "axios": "^1.4.0",
+    "bad-words": "^3.0.4",
+    "chalk": "^5.3.0",
+    "express": "^4.18.2",
+    "fetch-retry": "^5.0.6",
+    "node-fetch": "^3.2.6",
+    "openai": "^4.1.0",
+    "ora": "^7.0.1",
+    "prettier": "^3.0.1",
+    "sqlite": "^5.0.1",
+    "sqlite3": "^5.1.6",
+    "winston": "^3.10.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
 }

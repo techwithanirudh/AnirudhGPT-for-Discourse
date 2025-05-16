@@ -29,3 +29,6 @@ Contributions are welcome! Please submit a pull request with your changes.
 ## License
 
 This project is licensed under the AGPL License - see the [LICENSE](LICENSE) file for details.
+
+https://community.techwithanirudh.com/admin/api/keys
+https://community.techwithanirudh.com/admin/api/web_hooks (only notifications)
