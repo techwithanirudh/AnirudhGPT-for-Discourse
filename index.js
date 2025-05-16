@@ -197,9 +197,6 @@ app.all('/webhook', async (req, res) => {
 			chat_channel_id: '',
 		};
 
-			console.log(JSON.stringify(req.body))
-
-
 		if (req.body.ping) {
 			return res.sendStatus(200);
 		}
